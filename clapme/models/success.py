@@ -1,9 +1,8 @@
 from datetime import datetime
 from __init__ import db
-from .mixin.timestamp_mixin import TimestampMixin
 
 
-class UserGoal(TimestampMixin, db.Model):
+class Success(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer,
@@ -12,9 +11,6 @@ class UserGoal(TimestampMixin, db.Model):
     goal_id = db.Column(db.Integer,
                         db.ForeignKey('goal.id'),
                         nullable=False)
-    subscribe = db.Column(db.Boolean,
-                          default=True,
-                          nullable=False)
-    isAccepted = db.Column(db.Boolean,
-                           default=False,
-                           nullable=False)
+    created = db.Column(db.DateTime,
+                        nullable=False,
+                        default=datetime.utcnow)
