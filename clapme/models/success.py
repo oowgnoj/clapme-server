@@ -14,3 +14,4 @@ class Success(db.Model):
     created = db.Column(db.DateTime,
                         nullable=False,
                         default=datetime.utcnow)
+    reactions = db.relationship('Reaction', backref='success', lazy=True)

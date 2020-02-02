@@ -14,10 +14,10 @@ class Goal(TimestampMixin, db.Model):
                             index=False,
                             unique=False,
                             nullable=True)
-    intervall = db.Column(db.String(30),
-                          index=False,
-                          unique=False,
-                          nullable=False)
+    interval = db.Column(db.String(30),
+                         index=False,
+                         unique=False,
+                         nullable=False)
     times = db.Column(db.Integer,
                       index=False,
                       unique=False,
@@ -26,3 +26,6 @@ class Goal(TimestampMixin, db.Model):
                           index=False,
                           unique=False,
                           nullable=True)  # null 일 경우 클라이언트에서 초기 이미지로 처리
+    user_goals = db.relationship('UserGoal', backref='goal', lazy=True)
+    successes = db.relationship('Success', backref='goal', lazy=True)
+    comments = db.relationship('Comment', backref='goal', lazy=True)

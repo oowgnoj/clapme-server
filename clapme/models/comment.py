@@ -15,3 +15,4 @@ class Comment(TimestampMixin, db.Model):
     contents = db.Column(db.Text,
                          unique=False,
                          nullable=False)
+    reactions = db.relationship('Reaction', backref='comment', lazy=True)

@@ -31,3 +31,7 @@ class User(TimestampMixin, db.Model):
                       default=False,
                       unique=False,
                       nullable=False)
+    user_goals = db.relationship('UserGoal', backref='user', lazy=True)
+    successes = db.relationship('Success', backref='user', lazy=True)
+    comments = db.relationship('Comment', backref='user', lazy=True)
+    reactions = db.relationship('Reaction', backref='user', lazy=True)
