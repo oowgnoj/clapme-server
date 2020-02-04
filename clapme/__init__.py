@@ -1,10 +1,24 @@
 from flask import Flask, g
 from flask_sqlalchemy import SQLAlchemy
+from flask_restful import Resource, Api
+from views.viewss import ApiUserGoalList, ApiUserGoal
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root@127.0.0.1/test'
+app.config['SQLALCHEMY_DATABASE_URI'] = ''
 
+api = Api(app)
 db = SQLAlchemy(app)
+
+
+class HelloWorld(Resource):
+    def get(self):
+        return {'hello': 'world'}
+
+
+api.add_resource(HelloWorld, '/')
+api.add_resource(ApiUserGoalList, '/user-goal/<int:user_id>')
+api.add_resource(ApiUserGoal, '/user-goal/<int:user_id>/<int:goal_id>')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
