@@ -4,7 +4,7 @@ from flask_restful import Resource, Api
 from views.viewss import ApiUserGoalList, ApiUserGoal
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = ''
+app.config.from_object('config')
 
 api = Api(app)
 db = SQLAlchemy(app)
@@ -16,8 +16,8 @@ class HelloWorld(Resource):
 
 
 api.add_resource(HelloWorld, '/')
-api.add_resource(ApiUserGoalList, '/user-goal/<int:user_id>')
-api.add_resource(ApiUserGoal, '/user-goal/<int:user_id>/<int:goal_id>')
+api.add_resource(ApiUserGoalList, '/user-goal/')
+api.add_resource(ApiUserGoal, '/user-goal/<int:goal_id>')
 
 
 if __name__ == '__main__':
