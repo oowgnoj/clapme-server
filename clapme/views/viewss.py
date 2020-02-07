@@ -21,11 +21,11 @@ class ApiUserGoalList(Resource):
     def get(self):
         from models import Goal
 
-        args = parser.parse_args()
-        user_id = decoded_info(args['Authorization'], ['id'])
-        # user_id = 3
+        # args = parser.parse_args()
+        # user_id = decoded_info(args['Authorization'], ['id'])
+        user_id = 3
 
-        invited_goal_list = Goal.query.join(Goal.user_goals).filter_by(
+        invited_goal_list = Goal.query.join('user_goals').filter_by(
             user_id=user_id, isAccepted=False).all()
 
         result = []
@@ -90,6 +90,80 @@ class ApiUserGoal(Resource):
 
         deleting_target = UserGoal.query.filter_by(
             user_id=user_id, goal_id=goal_id).first_or_404(description='해당 조건의 데이터가 존재하지 않습니다')
+
+        db.session.delete(deleting_target)
+        db.session.commit()
+        return '성공적으로 삭제되었습니다', 200
+
+
+class ApiGoalSuccessList(Resource):
+    def get(self, goal_id):
+        from models import Success
+
+        result = []
+
+        successes_of_goal = Success.query.filter_by(goal_id=goal_id)
+
+        for success in successes_of_goal:
+            print('success', success)
+            success_info = {}
+            success_info['id'] = success.id
+            success_info['user_id'] = success.user_id
+            success_info['user_name'] = success.user.username
+            success_info['timestamp'] = success.created.strftime('%Y-%m-%d')
+            success_info['reactions'] = []
+            for reaction in success.reactions:
+                print('reaction', reaction)
+                reaction_info = {}
+                reaction_info['id'] = reaction.id
+                reaction_info['user_id'] = reaction.user.id
+                reaction_info['user_name'] = reaction.user.username
+                reaction_info['type'] = reaction.type
+                success_info['reactions'].append(reaction_info)
+            result.append(success_info)
+
+        return result, 200
+
+
+class ApiGoalCommentList(Resource):
+    def get(self, goal_id):
+        from models import Comment
+
+        result = []
+
+        comments_of_goal = Comment.query.filter_by(goal_id=goal_id)
+        for comment in comments_of_goal:
+            comment_info = {}
+            comment_info['id'] = comment.id
+            comment_info['user_id'] = comment.user_id
+            comment_info['goal_id'] = comment.goal_id
+            comment_info['user_name'] = comment.user.username
+            comment_info['content'] = comment.content
+            comment_info['timestamp'] = comment.created.strftime('%Y-%m-%d')
+            comment_info['reactions'] = []
+            for reaction in comment.reactions:
+                print('reaction', reaction)
+                reaction_info = {}
+                reaction_info['id'] = reaction.id
+                reaction_info['user_id'] = reaction.user.id
+                reaction_info['user_name'] = reaction.user.username
+                reaction_info['type'] = reaction.type
+                comment_info['reactions'].append(reaction_info)
+            result.append(comment_info)
+
+        return result, 200
+
+
+class ApiGoalComment(Resource):
+
+    def delete(self, comment_id):
+        from models import Comment
+        from __init__ import db
+
+        args = parser.parse_args()
+
+        deleting_target = Comment.query.filter_by(
+            id=comment_id).first_or_404(description='해당 조건의 데이터가 존재하지 않습니다')
 
         db.session.delete(deleting_target)
         db.session.commit()

@@ -1,7 +1,7 @@
 from flask import Flask, g
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
-from views.viewss import ApiUserGoalList, ApiUserGoal
+from views.viewss import ApiUserGoalList, ApiUserGoal, ApiGoalSuccessList, ApiGoalCommentList
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -18,6 +18,8 @@ class HelloWorld(Resource):
 api.add_resource(HelloWorld, '/')
 api.add_resource(ApiUserGoalList, '/user-goal/')
 api.add_resource(ApiUserGoal, '/user-goal/<int:goal_id>')
+api.add_resource(ApiGoalSuccessList, '/goal-success/<int:goal_id>')
+api.add_resource(ApiGoalCommentList, '/goal-success/<int:goal_id>')
 
 
 if __name__ == '__main__':
