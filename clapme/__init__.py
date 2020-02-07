@@ -1,17 +1,26 @@
 from flask import Flask, g
 from flask_sqlalchemy import SQLAlchemy
-from flask_script import Manager
-from flask_migrate import Migrate, MigrateCommand
+from flask_restful import Resource, Api
+from views.viewss import ApiUserGoalList, ApiUserGoal, ApiGoalSuccessList, ApiGoalCommentList
 
-# from flaskext.mysql import MySQL
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root@127.0.0.1/test' 
+app.config.from_object('config')
 
+api = Api(app)
 db = SQLAlchemy(app)
 
-# from models import *
-# db.create_all()
+
+class HelloWorld(Resource):
+    def get(self):
+        return {'hello': 'world'}
 
 
-if __name__ =='__main__':
+api.add_resource(HelloWorld, '/')
+api.add_resource(ApiUserGoalList, '/user-goal/')
+api.add_resource(ApiUserGoal, '/user-goal/<int:goal_id>')
+api.add_resource(ApiGoalSuccessList, '/goal-success/<int:goal_id>')
+api.add_resource(ApiGoalCommentList, '/goal-success/<int:goal_id>')
+
+
+if __name__ == '__main__':
     app.run(debug=True)
