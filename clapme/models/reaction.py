@@ -1,5 +1,5 @@
 from datetime import datetime
-from __init__ import db
+from clapme.__init__ import db
 
 
 class Reaction(db.Model):
