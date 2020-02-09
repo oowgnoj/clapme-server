@@ -19,11 +19,11 @@ def decode_info(token, attrs):
 
 class ApiUserGoalList(Resource):
     def get(self):
-        from models import Goal
+        from clapme.models import Goal
 
-        # args = parser.parse_args()
-        # user_id = decoded_info(args['Authorization'], ['id'])
-        user_id = 3
+        args = parser.parse_args()
+        user_id = decoded_info(args['Authorization'], ['id'])
+        # user_id = 3
 
         invited_goal_list = Goal.query.join('user_goals').filter_by(
             user_id=user_id, isAccepted=False).all()
@@ -40,14 +40,14 @@ class ApiUserGoalList(Resource):
         return result
 
     def post(self):
-        from models import UserGoal
-        from __init__ import db
+        from clapme.models import UserGoal
+        from clapme.__init__ import db
 
         args = parser.parse_args()
-        user_id = decoded_info(args['Authorization'], ['id'])
+        # user_id = decoded_info(args['Authorization'], ['id'])
 
         json_data = request.get_json(force=True)
-        # user_id = 3
+        user_id = 3
 
         user_goal_new_connection = UserGoal(
             user_id=user_id, goal_id=json_data['goal_id'], subscribe=False, isAccepted=False)
@@ -57,8 +57,8 @@ class ApiUserGoalList(Resource):
         return '성공적으로 추가되었습니다', 200
 
     def patch(self):
-        from models import UserGoal
-        from __init__ import db
+        from clapme.models import UserGoal
+        from clapme.__init__ import db
 
         args = parser.parse_args()
         json_data = request.get_json(force=True)
@@ -82,8 +82,8 @@ class ApiUserGoalList(Resource):
 
 class ApiUserGoal(Resource):
     def delete(self, goal_id):
-        from models import UserGoal
-        from __init__ import db
+        from clapme.models import UserGoal
+        from clapme.__init__ import db
 
         args = parser.parse_args()
         user_id = decoded_info(args['Authorization'], ['id'])
@@ -98,11 +98,12 @@ class ApiUserGoal(Resource):
 
 class ApiGoalSuccessList(Resource):
     def get(self, goal_id):
-        from models import Success
+
+        from clapme.models import Success
 
         result = []
 
-        successes_of_goal = Success.query.filter_by(goal_id=goal_id)
+        successes_of_goal = Success.query.filter_by(goal_id=goal_id).all()
 
         for success in successes_of_goal:
             print('success', success)
@@ -127,7 +128,7 @@ class ApiGoalSuccessList(Resource):
 
 class ApiGoalCommentList(Resource):
     def get(self, goal_id):
-        from models import Comment
+        from clapme.models import Comment
 
         result = []
 
@@ -157,8 +158,8 @@ class ApiGoalCommentList(Resource):
 class ApiGoalComment(Resource):
 
     def delete(self, comment_id):
-        from models import Comment
-        from __init__ import db
+        from clapme.models import Comment
+        from clapme.__init__ import db
 
         args = parser.parse_args()
 

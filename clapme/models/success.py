@@ -1,5 +1,6 @@
 from datetime import datetime
-from __init__ import db
+from clapme.__init__ import db
+print('-------------------------- 여기는 읽니???')
 
 
 class Success(db.Model):
