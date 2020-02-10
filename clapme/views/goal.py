@@ -61,7 +61,6 @@ class ApiGoal(Resource):
             return '적어도 한가지 필드를 입력해 주세요', 400
 
         target = Goal.query.filter_by(id=id).first()
-        print(request_params)
         for item in request_params:
             if request_params[item] != None:
                 setattr(target, item, request_params[item])
@@ -84,3 +83,24 @@ class ApiGoal(Resource):
         db.session.commit()
 
         return '데이터가 성공적으로 삭제되었습니다.'
+
+class ApiHistory(Resource):
+    def get(self, id):
+        from clapme.models import User, UserGoal
+        from ..__init__ import db
+        
+        args = parser.parse_args()
+        user_id = args['id']
+
+        user_goal_list = UserGoal.query.filter_by(user_id=id).all()
+        goal_success = []
+        for user_goal in user_goal_list:
+            success_list ={}
+            success_list['user_id'] = user_goal.user_id
+            success_list['user_name'] = user_goal.user.username
+            success_list['goal_id'] = user_goal.goal.id
+            for success in user_goal.goal.successes:
+                success_list['success_id'] = success.id
+                goal_success.append(success_list)
+            return goal_success
+
