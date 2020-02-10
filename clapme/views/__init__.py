@@ -1,6 +1,6 @@
 # from clapme.__init__ import api
 from flask_restful import Resource
-from .goal import ApiGoal
+from .goal import ApiGoal, ApiHistory
 from .viewss import ApiUserGoalList, ApiUserGoal, ApiGoalSuccessList, ApiGoalCommentList
 
 
@@ -16,3 +16,4 @@ def initialize_routes(api):
     api.add_resource(ApiUserGoal, '/user-goal/<int:goal_id>')
     api.add_resource(ApiGoalSuccessList, '/goal-success/<int:goal_id>')
     api.add_resource(ApiGoalCommentList, '/goal-comment/<int:goal_id>')
+    api.add_resource(ApiHistory, '/history/<int:id>')
