@@ -1,26 +1,15 @@
 from flask import Flask, g
-from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Resource, Api
-from views.viewss import ApiUserGoalList, ApiUserGoal, ApiGoalSuccessList, ApiGoalCommentList
+
+from clapme.models import initialize_db
+from clapme.views import initialize_routes
 
 app = Flask(__name__)
-app.config.from_object('config')
+app.config.from_object('clapme.config')
 
 api = Api(app)
-db = SQLAlchemy(app)
-
-
-class HelloWorld(Resource):
-    def get(self):
-        return {'hello': 'world'}
-
-
-api.add_resource(HelloWorld, '/')
-api.add_resource(ApiUserGoalList, '/user-goal/')
-api.add_resource(ApiUserGoal, '/user-goal/<int:goal_id>')
-api.add_resource(ApiGoalSuccessList, '/goal-success/<int:goal_id>')
-api.add_resource(ApiGoalCommentList, '/goal-success/<int:goal_id>')
-
+initialize_routes(api)
+initialize_db(app)
 
 if __name__ == '__main__':
     app.run(debug=True)

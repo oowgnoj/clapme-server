@@ -1,6 +1,7 @@
 from flask import request
 from flask_restful import reqparse, abort, Api, Resource
 from jwt import decode
+from clapme.models import db, User, UserGoal, Goal, Success, Reaction, Comment
 
 SECRET_KEY = 'walnut'
 
@@ -17,13 +18,11 @@ def decode_info(token, attrs):
     return result
 
 
-class ApiUserGoalList(Resource):
+class ApiUserGoal(Resource):
     def get(self):
-        from models import Goal
-
-        # args = parser.parse_args()
-        # user_id = decoded_info(args['Authorization'], ['id'])
-        user_id = 3
+        args = parser.parse_args()
+        user_id = decoded_info(args['Authorization'], ['id'])
+        # user_id = 3
 
         invited_goal_list = Goal.query.join('user_goals').filter_by(
             user_id=user_id, isAccepted=False).all()
@@ -40,9 +39,6 @@ class ApiUserGoalList(Resource):
         return result
 
     def post(self):
-        from models import UserGoal
-        from __init__ import db
-
         args = parser.parse_args()
         user_id = decoded_info(args['Authorization'], ['id'])
 
@@ -57,9 +53,6 @@ class ApiUserGoalList(Resource):
         return '성공적으로 추가되었습니다', 200
 
     def patch(self):
-        from models import UserGoal
-        from __init__ import db
-
         args = parser.parse_args()
         json_data = request.get_json(force=True)
 
@@ -69,8 +62,6 @@ class ApiUserGoalList(Resource):
         updating_target = UserGoal.query.filter_by(
             user_id=user_id, goal_id=json_data['goal_id']).first_or_404(description='해당 조건의 데이터가 존재하지 않습니다')
 
-        print('updating_target', updating_target)
-
         if json_data.get('subscribe') != None:
             updating_target.subscribe = json_data['subscribe']
         if json_data.get('isAccepted') != None:
@@ -79,14 +70,10 @@ class ApiUserGoalList(Resource):
 
         return '성공적으로 수정되었습니다', 200
 
-
-class ApiUserGoal(Resource):
     def delete(self, goal_id):
-        from models import UserGoal
-        from __init__ import db
-
         args = parser.parse_args()
         user_id = decoded_info(args['Authorization'], ['id'])
+        # user_id = 3
 
         deleting_target = UserGoal.query.filter_by(
             user_id=user_id, goal_id=goal_id).first_or_404(description='해당 조건의 데이터가 존재하지 않습니다')
@@ -98,11 +85,9 @@ class ApiUserGoal(Resource):
 
 class ApiGoalSuccessList(Resource):
     def get(self, goal_id):
-        from models import Success
-
         result = []
 
-        successes_of_goal = Success.query.filter_by(goal_id=goal_id)
+        successes_of_goal = Success.query.filter_by(goal_id=goal_id).all()
 
         for success in successes_of_goal:
             print('success', success)
@@ -127,8 +112,6 @@ class ApiGoalSuccessList(Resource):
 
 class ApiGoalCommentList(Resource):
     def get(self, goal_id):
-        from models import Comment
-
         result = []
 
         comments_of_goal = Comment.query.filter_by(goal_id=goal_id)
@@ -157,9 +140,6 @@ class ApiGoalCommentList(Resource):
 class ApiGoalComment(Resource):
 
     def delete(self, comment_id):
-        from models import Comment
-        from __init__ import db
-
         args = parser.parse_args()
 
         deleting_target = Comment.query.filter_by(
