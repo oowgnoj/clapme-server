@@ -81,3 +81,49 @@ class ApiGoal(Resource):
         db.session.commit()
         
         return '데이터가 성공적으로 삭제되었습니다.'
+
+
+class ApiHistory(Resource):
+    def get(self, id):
+        from clapme.models import User, UserGoal
+        from ..__init__ import db
+
+        args = parser.parse_args()
+        user_id = args['id']
+
+        user_goal_list = UserGoal.query.filter_by(user_id=id).all()
+        goal_success = []
+        for user_goal in user_goal_list:
+        success_list ={}
+        success_list['user_id'] = user_goal.user_id
+        success_list['user_name'] = user_goal.user.username
+        success_list['goal_id'] = user_goal.goal.id
+        for success in user_goal.goal.successes:
+            success_list['success_id'] = success.id
+            goal_success.append(success_list)
+        return goal_success
+
+class ApiReaction(Resource):
+    def post(self):
+        from clapme.models import Reaction
+        from ..__init__ import db
+
+        json_data = request.get_json(force=True)
+        
+        NewReaction = Reaction(user_id = json_data['user_id'], comment_id = json_data['comment_id'], type=json_data['type'] )
+        db.session.add(NewReaction)
+        db.session.commit()
+        return json_data, 200
+
+    def delete(self):
+        from clapme.models import Reaction
+        from ..__init__ import db
+
+        args = parser.parse_args()
+        id = args['id']
+
+        target = Goal.query.filter_by(id=id).first()
+        db.session.delete(target)
+        db.session.commit()
+
+        return '데이터가 성공적으로 삭제되었습니다.'
