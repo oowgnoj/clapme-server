@@ -103,13 +103,13 @@ class ApiHistory(Resource):
         user_goal_list = UserGoal.query.filter_by(user_id=id).all()
         goal_success = []
         for user_goal in user_goal_list:
-        success_list ={}
-        success_list['user_id'] = user_goal.user_id
-        success_list['user_name'] = user_goal.user.username
-        success_list['goal_id'] = user_goal.goal.id
-        for success in user_goal.goal.successes:
-            success_list['success_id'] = success.id
-            goal_success.append(success_list)
+            success_list ={}
+            success_list['user_id'] = user_goal.user_id
+            success_list['user_name'] = user_goal.user.username
+            success_list['goal_id'] = user_goal.goal.id
+            for success in user_goal.goal.successes:
+                success_list['success_id'] = success.id
+                goal_success.append(success_list)
         return goal_success
 
 class ApiReaction(Resource):
@@ -136,3 +136,26 @@ class ApiReaction(Resource):
         db.session.commit()
 
         return '데이터가 성공적으로 삭제되었습니다.'
+
+class ApiUserReaction(Resource):
+    def get(self, id):
+        from clapme.models import User, Success, Goal, Reaction
+        from clapme.models import db
+
+        user_success_reaction_list = []
+        # print(Success.query.filter_by(id = id).first())
+        user_success_list = Success.query.filter_by(user_id=id).all()
+        for user_success in user_success_list:
+            user_success_reaction = {}
+            user_success_reaction['success_id'] = user_success.id
+            # user_success_reaction['success_timestamp'] = user_success.id
+            user_success_reaction['goal_id'] = user_success.goal_id
+            user_success_reaction['goal_title'] = user_success.goal.title
+            for success_reaction in user_success.reactions:
+                user_success_reaction['user_id'] = success_reaction.user_id
+                # user_success_reaction['user_name'] = success_reaction.User.user_name
+                user_success_reaction['type'] = success_reaction.type
+                user_success_reaction_list.append(user_success_reaction)
+        
+        return user_success_reaction_list, 200
+
