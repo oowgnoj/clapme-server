@@ -104,3 +104,27 @@ class ApiHistory(Resource):
                 goal_success.append(success_list)
             return goal_success
 
+class ApiReaction(Resource):
+    def post(self):
+        from clapme.models import Reaction
+        from ..__init__ import db
+
+        json_data = request.get_json(force=True)
+        
+        NewReaction = Reaction(user_id = json_data['user_id'], comment_id = json_data['comment_id'], type=json_data['type'] )
+        db.session.add(NewReaction)
+        db.session.commit()
+        return json_data, 200
+
+    def delete(self):
+        from clapme.models import Reaction
+        from ..__init__ import db
+
+        args = parser.parse_args()
+        id = args['id']
+
+        target = Goal.query.filter_by(id=id).first()
+        db.session.delete(target)
+        db.session.commit()
+
+        return '데이터가 성공적으로 삭제되었습니다.'
