@@ -89,7 +89,6 @@ class ApiHistory(Resource):
         from clapme.models import User, UserGoal
         from ..__init__ import db
         
-<<<<<<< HEAD
         return '데이터가 성공적으로 삭제되었습니다.'
 
 
@@ -98,15 +97,12 @@ class ApiHistory(Resource):
         from clapme.models import User, UserGoal
         from ..__init__ import db
 
-=======
->>>>>>> a50380e18da50a5ae44f14a6beec2a2ae5d032f7
         args = parser.parse_args()
         user_id = args['id']
 
         user_goal_list = UserGoal.query.filter_by(user_id=id).all()
         goal_success = []
         for user_goal in user_goal_list:
-<<<<<<< HEAD
         success_list ={}
         success_list['user_id'] = user_goal.user_id
         success_list['user_name'] = user_goal.user.username
@@ -140,14 +136,3 @@ class ApiReaction(Resource):
         db.session.commit()
 
         return '데이터가 성공적으로 삭제되었습니다.'
-=======
-            success_list ={}
-            success_list['user_id'] = user_goal.user_id
-            success_list['user_name'] = user_goal.user.username
-            success_list['goal_id'] = user_goal.goal.id
-            for success in user_goal.goal.successes:
-                success_list['success_id'] = success.id
-                goal_success.append(success_list)
-            return goal_success
-
->>>>>>> a50380e18da50a5ae44f14a6beec2a2ae5d032f7
