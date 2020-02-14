@@ -1,49 +1,12 @@
 from flask import request
 from flask_restful import reqparse, abort, Api, Resource
-from jwt import decode
-from clapme.models import db, User, UserGoal, Goal, Success, Reaction, Comment
 
-SECRET_KEY = 'walnut'
+from clapme.models import db, User, UserGoal, Goal, Success, Reaction, Comment
+from clapme.util.helper import to_dict, extract
+from clapme.util.validation import api_json_validator
 
 parser = reqparse.RequestParser()
 parser.add_argument('Authorization', location='headers')
-
-
-# [helper 함수] 토큰 payload 에서 특정 키 attrs(type: list) 들의 값을 가져와 dict로 반환
-def decode_info(token, attrs):
-    result = {}
-    decoded = jwt.decode(token, SECRET_KEY, algorithms='HS256')
-    for attr in attrs:
-        result[attr] = decoded[attr]
-    return result
-
-
-# [helper 함수] DB 에서 불러온 리턴값인 query object 중 일부 필드만 객체로 추출
-def to_dict(query, attrs):
-    result = {}
-    for attr in attrs:
-        result[attr] = getattr(query, attr)
-    return result
-
-
-# [helper 함수] json 중 일부 프로퍼티만 객체로 추출
-def extract(json, attrs):
-    result = {}
-    for attr in attrs:
-        result[attr] = json[attr]
-    return result
-
-
-def to_dict_nested(query, attrs, nested_attrs):
-    result = {}
-    for attr in attrs:
-        value = getattr(query, attr)
-
-        if(type(value) is list):
-            result[attr] = to_dict(value, nested_attrs)
-        else:
-            result[attr] = getattr(query, attr)
-    return result
 
 
 class ApiUserGoal(Resource):
@@ -73,8 +36,14 @@ class ApiUserGoal(Resource):
         json_data = request.get_json(force=True)
         # user_id = 3
 
+        try:
+            api_json_validator(json_data, ['goal_id'])
+        except Exception as error:
+            abort(400, message="{}".format(error))
+
         user_goal_new_connection = UserGoal(
             user_id=user_id, goal_id=json_data['goal_id'], subscribe=False, isAccepted=False)
+
         db.session.add(user_goal_new_connection)
         db.session.commit()
 
@@ -86,6 +55,11 @@ class ApiUserGoal(Resource):
 
         user_id = decoded_info(args['Authorization'], ['id'])
         # user_id = 3
+
+        try:
+            api_json_validator(json_data, ['goal_id'])
+        except Exception as error:
+            abort(400, message="{}".format(error))
 
         updating_target = UserGoal.query.filter_by(
             user_id=user_id, goal_id=json_data['goal_id']).first_or_404(description='해당 조건의 데이터가 존재하지 않습니다')
@@ -102,6 +76,11 @@ class ApiUserGoal(Resource):
         args = parser.parse_args()
         user_id = decoded_info(args['Authorization'], ['id'])
         # user_id = 3
+
+        try:
+            api_json_validator(json_data, ['goal_id'])
+        except Exception as error:
+            abort(400, message="{}".format(error))
 
         deleting_target = UserGoal.query.filter_by(
             user_id=user_id, goal_id=goal_id).first_or_404(description='해당 조건의 데이터가 존재하지 않습니다')
