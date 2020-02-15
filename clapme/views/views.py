@@ -88,24 +88,27 @@ class ApiGoal(Resource):
 
         return '데이터가 성공적으로 삭제되었습니다.'
 
-
 class ApiHistory(Resource):
     def get(self, id):
-        args = parser.parse_args()
-        user_id = args['id']
 
         user_goal_list = UserGoal.query.filter_by(user_id=id).all()
         goal_success = []
-        for user_goal in user_goal_list:
-            success_list = {}
-            success_list['user_id'] = user_goal.user_id
-            success_list['user_name'] = user_goal.user.username
-            success_list['goal_id'] = user_goal.goal.id
-            for success in user_goal.goal.successes:
-                success_list['success_id'] = success.id
-                goal_success.append(success_list)
-        return goal_success
 
+        for user_goal in user_goal_list:
+            success_list ={}
+            success_list['goal_id'] = user_goal.goal.id
+            success_list['goal_title'] = user_goal.goal.title
+            for success in user_goal.goal.successes:
+                success_user = User.query.filter_by(id = success.user_id).first()
+                success_list['success_id'] = success.id
+                success_list['success_created'] = success.created.strftime('%Y-%m-%d %H:%M:%S')
+                success_list['success_user_id'] = success.user_id
+                success_list['success_user_name'] = success_user.username
+                success_list['success_user_profile'] = success_user.profile
+                success_list['success_user_profile_pic'] = success_user.profile_pic
+                goal_success.append(success_list)
+
+        return goal_success
 
 class ApiReaction(Resource):
     def post(self):
