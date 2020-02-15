@@ -61,7 +61,6 @@ class ApiGoal(Resource):
             return '적어도 한가지 필드를 입력해 주세요', 400
 
         target = Goal.query.filter_by(id=id).first()
-        print(request_params)
         for item in request_params:
             if request_params[item] != None:
                 setattr(target, item, request_params[item])
@@ -84,3 +83,79 @@ class ApiGoal(Resource):
         db.session.commit()
 
         return '데이터가 성공적으로 삭제되었습니다.'
+
+class ApiHistory(Resource):
+    def get(self, id):
+        from clapme.models import User, UserGoal
+        from ..__init__ import db
+        
+        return '데이터가 성공적으로 삭제되었습니다.'
+
+
+class ApiHistory(Resource):
+    def get(self, id):
+        from clapme.models import User, UserGoal
+        from ..__init__ import db
+
+        args = parser.parse_args()
+        user_id = args['id']
+
+        user_goal_list = UserGoal.query.filter_by(user_id=id).all()
+        goal_success = []
+        for user_goal in user_goal_list:
+            success_list ={}
+            success_list['user_id'] = user_goal.user_id
+            success_list['user_name'] = user_goal.user.username
+            success_list['goal_id'] = user_goal.goal.id
+            for success in user_goal.goal.successes:
+                success_list['success_id'] = success.id
+                goal_success.append(success_list)
+        return goal_success
+
+class ApiReaction(Resource):
+    def post(self):
+        from clapme.models import Reaction
+        from ..__init__ import db
+
+        json_data = request.get_json(force=True)
+        
+        NewReaction = Reaction(user_id = json_data['user_id'], comment_id = json_data['comment_id'], type=json_data['type'] )
+        db.session.add(NewReaction)
+        db.session.commit()
+        return json_data, 200
+
+    def delete(self):
+        from clapme.models import Reaction
+        from ..__init__ import db
+
+        args = parser.parse_args()
+        id = args['id']
+
+        target = Goal.query.filter_by(id=id).first()
+        db.session.delete(target)
+        db.session.commit()
+
+        return '데이터가 성공적으로 삭제되었습니다.'
+
+class ApiUserReaction(Resource):
+    def get(self, id):
+        from clapme.models import User, Success, Goal, Reaction
+        from clapme.models import db
+
+        user_success_reaction_list = []
+        # print(Success.query.filter_by(id = id).first())
+        user_success_list = Success.query.filter_by(user_id=id).all()
+        for user_success in user_success_list:
+            user_success_reaction = {}
+            user_success_reaction['success_id'] = user_success.id
+            # user_success_reaction['success_timestamp'] = user_success.id
+            user_success_reaction['goal_id'] = user_success.goal_id
+            user_success_reaction['goal_title'] = user_success.goal.title
+            for success_reaction in user_success.reactions:
+                user_success_reaction['user_id'] = success_reaction.user_id
+                # user_success_reaction['user_name'] = success_reaction.User.user_name
+                user_success_reaction['type'] = success_reaction.type
+                user_success_reaction_list.append(user_success_reaction)
+        
+        return user_success_reaction_list, 200
+
