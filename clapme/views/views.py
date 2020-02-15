@@ -4,6 +4,7 @@ from flask import jsonify, request, Flask, make_response
 from clapme.models import db, User, UserGoal, Goal, Success, Reaction, Comment
 from clapme.util.helper import to_dict, extract
 from clapme.util.validation import api_json_validator
+from clapme.views.auth import authenticate
 
 parser = reqparse.RequestParser()
 
@@ -300,10 +301,12 @@ class ApiGoalComment(Resource):
 
 class ApiUser(Resource):
 
+    method_decorators = [authenticate]
+
     def get(self):
         args = parser.parse_args()
-        user_id = decoded_info(args['Authorization'], ['id'])
-        # user_id = 1
+        # user_id = decoded_info(args['Authorization'], ['id'])
+        user_id = 1
 
         user_info = User.query.filter_by(id=user_id).first()
         result = to_dict(

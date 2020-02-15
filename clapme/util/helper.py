@@ -1,4 +1,4 @@
-from jwt import decode
+from jose import jwt
 
 SECRET_KEY = 'walnut'
 
