@@ -2,7 +2,7 @@ from flask_restful import reqparse, abort, Api, Resource
 from flask import jsonify, request, Flask, make_response
 
 from clapme.models import db, User, UserGoal, Goal, Success, Reaction, Comment
-from clapme.util.helper import to_dict, extract
+from clapme.util.helper import decode_info, to_dict, extract
 from clapme.util.validation import api_json_validator
 from clapme.views.auth import authenticate
 
@@ -152,9 +152,8 @@ class ApiUserReaction(Resource):
 
 class ApiUserGoal(Resource):
     def get(self):
-        args = parser.parse_args()
-        user_id = decoded_info(args['Authorization'], ['id'])
-        # user_id = 3
+        token = request.headers.get('Authorization')
+        user_id = decode_info(token, ['id'])['id']
 
         invited_goal_list = Goal.query.join('user_goals').filter_by(
             user_id=user_id, isAccepted=False).all()
@@ -171,8 +170,8 @@ class ApiUserGoal(Resource):
         return result
 
     def post(self):
-        args = parser.parse_args()
-        user_id = decoded_info(args['Authorization'], ['id'])
+        token = request.headers.get('Authorization')
+        user_id = decode_info(token, ['id'])['id']
 
         json_data = request.get_json(force=True)
         # user_id = 3
@@ -191,11 +190,10 @@ class ApiUserGoal(Resource):
         return '성공적으로 추가되었습니다', 200
 
     def patch(self):
-        args = parser.parse_args()
-        json_data = request.get_json(force=True)
+        token = request.headers.get('Authorization')
+        user_id = decode_info(token, ['id'])['id']
 
-        user_id = decoded_info(args['Authorization'], ['id'])
-        # user_id = 3
+        json_data = request.get_json(force=True)
 
         try:
             api_json_validator(json_data, ['goal_id'])
@@ -214,8 +212,8 @@ class ApiUserGoal(Resource):
         return '성공적으로 수정되었습니다', 200
 
     def delete(self, goal_id):
-        args = parser.parse_args()
-        user_id = decoded_info(args['Authorization'], ['id'])
+        token = request.headers.get('Authorization')
+        user_id = decode_info(token, ['id'])['id']
         # user_id = 3
 
         try:
@@ -304,9 +302,8 @@ class ApiUser(Resource):
     method_decorators = [authenticate]
 
     def get(self):
-        args = parser.parse_args()
-        # user_id = decoded_info(args['Authorization'], ['id'])
-        user_id = 1
+        token = request.headers.get('Authorization')
+        user_id = decode_info(token, ['id'])['id']
 
         user_info = User.query.filter_by(id=user_id).first()
         result = to_dict(
@@ -315,16 +312,17 @@ class ApiUser(Resource):
         return result, 200
 
     def patch(self):
-        args = parser.parse_args()
-        json_data = request.get_json(force=True)
+        token = request.headers.get('Authorization')
+        user_id = decode_info(token, ['id'])['id']
 
-        user_id = decoded_info(args['Authorization'], ['id'])
-        # user_id = 1
+        json_data = request.get_json(force=True)
 
         updating_info = extract(
             json_data, ['username', 'profile', 'profile_pic'])
 
-        db.session.query(User).filter(id == user_id).update(updating_info)
+        print('updating_info', updating_info)
+
+        User.query.filter_by(id=user_id).update(updating_info)
         db.session.commit()
 
         return '성공적으로 수정되었습니다', 200

@@ -1,6 +1,6 @@
 from jose import jwt
 
-SECRET_KEY = 'walnut'
+SECRET_KEY = 'coffee'
 
 
 # [helper 함수] 토큰 payload 에서 특정 키 attrs(type: list) 들의 값을 가져와 dict로 반환
@@ -20,11 +20,14 @@ def to_dict(query, attrs):
     return result
 
 
-# [helper 함수] json 중 일부 프로퍼티만 객체로 추출
+# [helper 함수] json 중 attrs 에 포함된 키만 객체로 추출
 def extract(json, attrs):
     result = {}
-    for attr in attrs:
-        result[attr] = json[attr]
+    keys = json.keys()
+    for key in keys:
+        if key in attrs:
+            result[key] = json[key]
+    print('result', result)
     return result
 
 
