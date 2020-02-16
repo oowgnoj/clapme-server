@@ -22,56 +22,29 @@ class ApiGoal(Resource):
         }
 
     def post(self):
-        rows = db.session.query(Goal).count() + 1
+        json_data = request.get_json(force=True)
+        
+        try:
+            api_json_validator(json_data, ['title', 'interval', 'times'])
+        except Exception as error:
+            abort(400, message="{}".format(error))
 
-        parser.add_argument('id')
-        parser.add_argument('description')
-        parser.add_argument('title')
-        parser.add_argument('interval')
-        parser.add_argument('times')
-        parser.add_argument('thumbnail')
-        args = parser.parse_args()
-
-        description = args['description']
-        title = args['title']
-        interval = args['interval']
-        times = args['times']
-        thumbnail = args['thumbnail']
-
-        NewGoal = Goal(id=rows, description=description, title=title,
-                       interval=interval, times=times, thumbnail=thumbnail)
-
-        # 만약 db에서 에러가 난다면?
+        NewGoal = Goal(description=json_data['description'], title=json_data['title'],
+                       interval=json_data['interval'], times=json_data['times'], thumbnail=json_data['title'])
 
         if NewGoal:
             db.session.add(NewGoal)
             db.session.commit()
-
-        return make_response(jsonify({'title': title, 'description': description, 'interval': interval, 'times': times, 'thumbnail': thumbnail}), 200)
+        return '데이터가 성공적으로 추가되었습니다', 200
 
     def patch(self):
-        parser.add_argument('id')
-        parser.add_argument('description')
-        parser.add_argument('title')
-        parser.add_argument('interval')
-        parser.add_argument('times')
-        parser.add_argument('thumbnail')
+        json_data = request.get_json(force=True)
 
         args = parser.parse_args()
+        request_id = args['id']
 
-        request_params = {'id': args['id'], 'description': args['description'], 'title': args['title'],
-                          'interval': args['interval'], 'times': args['times'], 'thumbnail': args['thumbnail']}
-
-        if not id:
-            return '잘못된 id 입력값 입니다.', 400
-        elif not (request_params['title'] or request_params['description'] or request_params['interval'] or request_params['times'] or request_params['thumbnail']):
-            return '적어도 한가지 필드를 입력해 주세요', 400
-
-        target = Goal.query.filter_by(id=id).first()
-        for item in request_params:
-            if request_params[item] != None:
-                setattr(target, item, request_params[item])
-                db.session.commit()
+        Goal.query.filter_by(id=request_id).update(dict(json_data))
+        db.session.commit() 
 
         return '성공적으로 변경되었습니다.'
 
@@ -118,7 +91,7 @@ class ApiReaction(Resource):
             user_id=json_data['user_id'], comment_id=json_data['comment_id'], type=json_data['type'])
         db.session.add(NewReaction)
         db.session.commit()
-        return json_data, 200
+        return '데이터가 성공적으로 추가되었습니다', 200
 
     def delete(self, id):
 
@@ -189,7 +162,7 @@ class ApiUserGoal(Resource):
         db.session.add(user_goal_new_connection)
         db.session.commit()
 
-        return '성공적으로 추가되었습니다', 200
+        return '성공적으로 되었습니다', 200
 
     def patch(self):
         args = parser.parse_args()
