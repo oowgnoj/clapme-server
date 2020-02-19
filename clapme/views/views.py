@@ -12,7 +12,6 @@ parser = reqparse.RequestParser()
 class ApiGoal(Resource):
 
     def get(self, id):
-
         goal = Goal.query.filter_by(id=id).first()
         return {
             'id': goal.id,
@@ -23,15 +22,8 @@ class ApiGoal(Resource):
 
     def post(self):
         json_data = request.get_json(force=True)
-        
-        try:
-            api_json_validator(json_data, ['title', 'interval', 'times'])
-        except Exception as error:
-            abort(400, message="{}".format(error))
-
         NewGoal = Goal(description=json_data['description'], title=json_data['title'],
-                       interval=json_data['interval'], times=json_data['times'], thumbnail=json_data['thumbnail'])
-
+                        interval=json_data['interval'], times=json_data['times'], thumbnail=json_data['thumbnail'])
         if NewGoal:
             db.session.add(NewGoal)
             db.session.commit()
@@ -39,27 +31,19 @@ class ApiGoal(Resource):
 
     def patch(self):
         json_data = request.get_json(force=True)
-
         target = Goal.query.filter_by(id=json_data['id']).first()
         for item in json_data:
             if json_data[item] != None:
                 setattr(target, item, json_data[item])
         db.session.commit()
+        response = to_dict(target, ['title', 'description', 'interval', 'times','thumbnail'])
+        return response, '성공적으로 변경되었습니다.'
 
-        return '성공적으로 변경되었습니다.'
 
-
-    def delete(self):
-        args = parser.parse_args()
-        id = args['id']
-
-        if not id:
-            return '잘못된 id 입력값 입니다.', 400
-
+    def delete(self, id):
         target = Goal.query.filter_by(id=id).first()
         db.session.delete(target)
         db.session.commit()
-
         return '데이터가 성공적으로 삭제되었습니다.'
 
 class ApiHistory(Resource):
