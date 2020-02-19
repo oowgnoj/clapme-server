@@ -1,20 +1,15 @@
+from __future__ import absolute_import
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 db = SQLAlchemy()
 
-
+print('here1')
 def initialize_db(app):
+    print('here2')
     db.init_app(app)
 
-
-class TimestampMixin(object):
-    created = db.Column(
-        db.DateTime, nullable=False, default=datetime.utcnow)
-    updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
-
-
-class User(TimestampMixin, db.Model):
+class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(80),
@@ -42,13 +37,16 @@ class User(TimestampMixin, db.Model):
                       default=False,
                       unique=False,
                       nullable=False)
-    user_goals = db.relationship('UserGoal', backref='user', lazy=True)
-    successes = db.relationship('Success', backref='user', lazy=True)
-    comments = db.relationship('Comment', backref='user', lazy=True)
-    reactions = db.relationship('Reaction', backref='user', lazy=True)
+    created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    user_goals = db.relationship('UserGoal', cascade="all,delete", backref='user', lazy=True)
+    successes = db.relationship('Success', cascade="all,delete", backref='user', lazy=True)
+    comments = db.relationship('Comment', cascade="all,delete", backref='user', lazy=True)
+    reactions = db.relationship('Reaction', cascade="all,delete", backref='user', lazy=True)
 
 
-class UserGoal(TimestampMixin, db.Model):
+class UserGoal(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer,
@@ -63,9 +61,11 @@ class UserGoal(TimestampMixin, db.Model):
     isAccepted = db.Column(db.Boolean,
                            default=False,
                            nullable=False)
+    created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
 
-class Goal(TimestampMixin, db.Model):
+class Goal(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(30),
@@ -88,9 +88,13 @@ class Goal(TimestampMixin, db.Model):
                           index=False,
                           unique=False,
                           nullable=True)  # null 일 경우 클라이언트에서 초기 이미지로 처리
-    user_goals = db.relationship('UserGoal', backref='goal', lazy=True)
-    successes = db.relationship('Success', backref='goal', lazy=True)
-    comments = db.relationship('Comment', backref='goal', lazy=True)
+    created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+
+    user_goals = db.relationship('UserGoal', cascade="all,delete", backref='goal', lazy=True)
+    successes = db.relationship('Success', cascade="all,delete", backref='goal', lazy=True)
+    comments = db.relationship('Comment', cascade="all,delete", backref='goal', lazy=True)
 
 
 class Success(db.Model):
@@ -105,7 +109,7 @@ class Success(db.Model):
     created = db.Column(db.DateTime,
                         nullable=False,
                         default=datetime.utcnow)
-    reactions = db.relationship('Reaction', backref='success', lazy=True)
+    reactions = db.relationship('Reaction', cascade="all,delete", backref='success', lazy=True)
 
 
 class Reaction(db.Model):
@@ -126,9 +130,10 @@ class Reaction(db.Model):
     created = db.Column(db.DateTime,
                         nullable=False,
                         default=datetime.utcnow)
+    updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
 
-class Comment(TimestampMixin, db.Model):
+class Comment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer,
@@ -140,4 +145,8 @@ class Comment(TimestampMixin, db.Model):
     contents = db.Column(db.Text,
                          unique=False,
                          nullable=False)
-    reactions = db.relationship('Reaction', backref='comment', lazy=True)
+    reactions = db.relationship('Reaction', cascade="all,delete", backref='comment', lazy=True)
+    created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+print('here')

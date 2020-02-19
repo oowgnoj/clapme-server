@@ -12,7 +12,6 @@ parser = reqparse.RequestParser()
 class ApiGoal(Resource):
 
     def get(self, id):
-
         goal = Goal.query.filter_by(id=id).first()
         return {
             'id': goal.id,
@@ -22,110 +21,68 @@ class ApiGoal(Resource):
         }
 
     def post(self):
-        rows = db.session.query(Goal).count() + 1
-
-        parser.add_argument('id')
-        parser.add_argument('description')
-        parser.add_argument('title')
-        parser.add_argument('interval')
-        parser.add_argument('times')
-        parser.add_argument('thumbnail')
-        args = parser.parse_args()
-
-        description = args['description']
-        title = args['title']
-        interval = args['interval']
-        times = args['times']
-        thumbnail = args['thumbnail']
-
-        NewGoal = Goal(id=rows, description=description, title=title,
-                       interval=interval, times=times, thumbnail=thumbnail)
-
-        # 만약 db에서 에러가 난다면?
-
+        json_data = request.get_json(force=True)
+        NewGoal = Goal(description=json_data['description'], title=json_data['title'],
+                        interval=json_data['interval'], times=json_data['times'], thumbnail=json_data['thumbnail'])
         if NewGoal:
             db.session.add(NewGoal)
             db.session.commit()
-
-        return make_response(jsonify({'title': title, 'description': description, 'interval': interval, 'times': times, 'thumbnail': thumbnail}), 200)
+        return '데이터가 성공적으로 추가되었습니다', 200
 
     def patch(self):
-        parser.add_argument('id')
-        parser.add_argument('description')
-        parser.add_argument('title')
-        parser.add_argument('interval')
-        parser.add_argument('times')
-        parser.add_argument('thumbnail')
+        json_data = request.get_json(force=True)
+        target = Goal.query.filter_by(id=json_data['id']).first()
+        for item in json_data:
+            if json_data[item] != None:
+                setattr(target, item, json_data[item])
+        db.session.commit()
+        response = to_dict(target, ['title', 'description', 'interval', 'times','thumbnail'])
+        return response, '성공적으로 변경되었습니다.'
 
-        args = parser.parse_args()
 
-        request_params = {'id': args['id'], 'description': args['description'], 'title': args['title'],
-                          'interval': args['interval'], 'times': args['times'], 'thumbnail': args['thumbnail']}
-
-        if not id:
-            return '잘못된 id 입력값 입니다.', 400
-        elif not (request_params['title'] or request_params['description'] or request_params['interval'] or request_params['times'] or request_params['thumbnail']):
-            return '적어도 한가지 필드를 입력해 주세요', 400
-
-        target = Goal.query.filter_by(id=id).first()
-        for item in request_params:
-            if request_params[item] != None:
-                setattr(target, item, request_params[item])
-                db.session.commit()
-
-        return '성공적으로 변경되었습니다.'
-
-    def delete(self):
-        args = parser.parse_args()
-        id = args['id']
-
-        if not id:
-            return '잘못된 id 입력값 입니다.', 400
-
+    def delete(self, id):
         target = Goal.query.filter_by(id=id).first()
         db.session.delete(target)
         db.session.commit()
-
         return '데이터가 성공적으로 삭제되었습니다.'
-
 
 class ApiHistory(Resource):
     def get(self, id):
-        args = parser.parse_args()
-        user_id = args['id']
 
         user_goal_list = UserGoal.query.filter_by(user_id=id).all()
         goal_success = []
-        for user_goal in user_goal_list:
-            success_list = {}
-            success_list['user_id'] = user_goal.user_id
-            success_list['user_name'] = user_goal.user.username
-            success_list['goal_id'] = user_goal.goal.id
-            for success in user_goal.goal.successes:
-                success_list['success_id'] = success.id
-                goal_success.append(success_list)
-        return goal_success
 
+        for user_goal in user_goal_list:
+            success_list ={}
+            success_list['goal_id'] = user_goal.goal.id
+            success_list['goal_title'] = user_goal.goal.title
+            for success in user_goal.goal.successes:
+                success_user = User.query.filter_by(id = success.user_id).first()
+                success_list['success_id'] = success.id
+                success_list['success_created'] = success.created.strftime('%Y-%m-%d %H:%M:%S')
+                success_list['success_user_id'] = success.user_id
+                success_list['success_user_name'] = success_user.username
+                success_list['success_user_profile'] = success_user.profile
+                success_list['success_user_profile_pic'] = success_user.profile_pic
+                goal_success.append(success_list)
+
+        return goal_success
 
 class ApiReaction(Resource):
     def post(self):
-
         json_data = request.get_json(force=True)
 
         NewReaction = Reaction(
             user_id=json_data['user_id'], comment_id=json_data['comment_id'], type=json_data['type'])
         db.session.add(NewReaction)
         db.session.commit()
-        return json_data, 200
+        return '데이터가 성공적으로 추가되었습니다', 200
 
-    def delete(self):
-        args = parser.parse_args()
-        id = args['id']
+    def delete(self, id):
 
-        target = Goal.query.filter_by(id=id).first()
+        target = Reaction.query.filter_by(id=id).first()
         db.session.delete(target)
         db.session.commit()
-
         return '데이터가 성공적으로 삭제되었습니다.'
 
 
@@ -133,18 +90,20 @@ class ApiUserReaction(Resource):
     def get(self, id):
 
         user_success_reaction_list = []
-        # print(Success.query.filter_by(id = id).first())
+
         user_success_list = Success.query.filter_by(user_id=id).all()
         for user_success in user_success_list:
             user_success_reaction = {}
             user_success_reaction['success_id'] = user_success.id
-            # user_success_reaction['success_timestamp'] = user_success.id
+            user_success_reaction['success_timestamp'] = user_success.created.strftime('%Y-%m-%d %H:%M:%S')
             user_success_reaction['goal_id'] = user_success.goal_id
             user_success_reaction['goal_title'] = user_success.goal.title
             for success_reaction in user_success.reactions:
+                success_reaction_user = User.query.filter_by(id= success_reaction.user_id).first()
                 user_success_reaction['user_id'] = success_reaction.user_id
-                # user_success_reaction['user_name'] = success_reaction.User.user_name
                 user_success_reaction['type'] = success_reaction.type
+                user_success_reaction['user_name'] = success_reaction_user.username
+                user_success_reaction['user_profile_pic'] = success_reaction_user.profile_pic
                 user_success_reaction_list.append(user_success_reaction)
 
         return user_success_reaction_list, 200
@@ -187,7 +146,7 @@ class ApiUserGoal(Resource):
         db.session.add(user_goal_new_connection)
         db.session.commit()
 
-        return '성공적으로 추가되었습니다', 200
+        return '성공적으로 되었습니다', 200
 
     def patch(self):
         token = request.headers.get('Authorization')
