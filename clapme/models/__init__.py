@@ -5,9 +5,12 @@ from datetime import datetime
 db = SQLAlchemy()
 
 print('here1')
+
+
 def initialize_db(app):
     print('here2')
     db.init_app(app)
+
 
 class User(db.Model):
 
@@ -40,10 +43,14 @@ class User(db.Model):
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
-    user_goals = db.relationship('UserGoal', cascade="all,delete", backref='user', lazy=True)
-    successes = db.relationship('Success', cascade="all,delete", backref='user', lazy=True)
-    comments = db.relationship('Comment', cascade="all,delete", backref='user', lazy=True)
-    reactions = db.relationship('Reaction', cascade="all,delete", backref='user', lazy=True)
+    user_goals = db.relationship(
+        'UserGoal', cascade="all,delete", backref='user', lazy=True)
+    successes = db.relationship(
+        'Success', cascade="all,delete", backref='user', lazy=True)
+    comments = db.relationship(
+        'Comment', cascade="all,delete", backref='user', lazy=True)
+    reactions = db.relationship(
+        'Reaction', cascade="all,delete", backref='user', lazy=True)
 
 
 class UserGoal(db.Model):
@@ -55,6 +62,9 @@ class UserGoal(db.Model):
     goal_id = db.Column(db.Integer,
                         db.ForeignKey('goal.id'),
                         nullable=False)
+    is_owner = db.Column(db.Boolean,
+                         defatul=False,
+                         nullable=False)
     subscribe = db.Column(db.Boolean,
                           default=True,
                           nullable=False)
@@ -91,10 +101,12 @@ class Goal(db.Model):
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
-
-    user_goals = db.relationship('UserGoal', cascade="all,delete", backref='goal', lazy=True)
-    successes = db.relationship('Success', cascade="all,delete", backref='goal', lazy=True)
-    comments = db.relationship('Comment', cascade="all,delete", backref='goal', lazy=True)
+    user_goals = db.relationship(
+        'UserGoal', cascade="all,delete", backref='goal', lazy=True)
+    successes = db.relationship(
+        'Success', cascade="all,delete", backref='goal', lazy=True)
+    comments = db.relationship(
+        'Comment', cascade="all,delete", backref='goal', lazy=True)
 
 
 class Success(db.Model):
@@ -109,7 +121,8 @@ class Success(db.Model):
     created = db.Column(db.DateTime,
                         nullable=False,
                         default=datetime.utcnow)
-    reactions = db.relationship('Reaction', cascade="all,delete", backref='success', lazy=True)
+    reactions = db.relationship(
+        'Reaction', cascade="all,delete", backref='success', lazy=True)
 
 
 class Reaction(db.Model):
@@ -145,8 +158,10 @@ class Comment(db.Model):
     contents = db.Column(db.Text,
                          unique=False,
                          nullable=False)
-    reactions = db.relationship('Reaction', cascade="all,delete", backref='comment', lazy=True)
+    reactions = db.relationship(
+        'Reaction', cascade="all,delete", backref='comment', lazy=True)
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
 
 print('here')
