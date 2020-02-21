@@ -63,7 +63,7 @@ class UserGoal(db.Model):
                         db.ForeignKey('goal.id'),
                         nullable=False)
     is_owner = db.Column(db.Boolean,
-                         defatul=False,
+                         default=False,
                          nullable=False)
     subscribe = db.Column(db.Boolean,
                           default=True,
