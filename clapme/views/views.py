@@ -1,5 +1,6 @@
 from flask_restful import reqparse, abort, Api, Resource
 from flask import jsonify, request, Flask, make_response
+from enum import Enum
 
 from clapme.models import db, User, UserGoal, Goal, Success, Reaction, Comment
 from clapme.util.helper import decode_info, to_dict, extract
@@ -33,7 +34,7 @@ class ApiGoal(Resource):
         db.session.refresh(new_goal)
 
         new_user_goal = UserGoal(
-            user_id=user_id, goal_id=new_goal.id, subscribe=True, isAccepted=True, is_owner=True)
+            user_id=user_id, goal_id=new_goal.id, subscribe=True, isAccepted=True)
 
         db.session.add(new_user_goal)
         db.session.commit()
@@ -133,17 +134,31 @@ class ApiUserGoal(Resource):
         token = request.headers.get('Authorization')
         user_id = decode_info(token, ['id'])['id']
 
-        invited_goal_list = Goal.query.join('user_goals').filter_by(
-            user_id=user_id, isAccepted=False).all()
+        filter_option = {
+            'user_id': user_id
+        }
+
+        user_goal_list_type = ('accepted', 'invited')
+        args = request.args.get('type')
+
+        if args == user_goal_list_type[0]:
+            filter_option['isAccepted'] = True
+        elif args == user_goal_list_type[1]:
+            filter_option['isAccepted'] = False
+        else:
+            abort(400)
+
+        goal_list = Goal.query.join('user_goals').filter_by(
+            **filter_option).all()
 
         result = []
 
-        for goal in invited_goal_list:
-            invitation_info = {}
-            invitation_info['user_goal_id'] = goal.user_goals[0].id
-            invitation_info['goal_id'] = goal.id
-            invitation_info['title'] = goal.title
-            result.append(invitation_info)
+        for goal in goal_list:
+            info = {}
+            info['user_goal_id'] = goal.user_goals[0].id
+            info['goal_id'] = goal.id
+            info['title'] = goal.title
+            result.append(info)
 
         return result
 
@@ -191,12 +206,6 @@ class ApiUserGoal(Resource):
     def delete(self, goal_id):
         token = request.headers.get('Authorization')
         user_id = decode_info(token, ['id'])['id']
-        # user_id = 3
-
-        try:
-            api_json_validator(json_data, ['goal_id'])
-        except Exception as error:
-            abort(400, message="{}".format(error))
 
         deleting_target = UserGoal.query.filter_by(
             user_id=user_id, goal_id=goal_id).first_or_404(description='해당 조건의 데이터가 존재하지 않습니다')
@@ -206,7 +215,7 @@ class ApiUserGoal(Resource):
         return '성공적으로 삭제되었습니다', 200
 
 
-class ApiGoalSuccessList(Resource):
+class ApiGoalSuccess(Resource):
     def get(self, goal_id):
         result = []
 
@@ -232,6 +241,24 @@ class ApiGoalSuccessList(Resource):
 
         return result, 200
 
+    def post(self):
+        token = request.headers.get('Authorization')
+        user_id = decode_info(token, ['id'])['id']
+
+        json_data = request.get_json(force=True)
+
+        try:
+            api_json_validator(json_data, ['goal_id'])
+        except Exception as error:
+            abort(400, message="{}".format(error))
+
+        new_success = Success(
+            user_id=user_id, goal_id=json_data['goal_id'])
+        db.session.add(new_success)
+        db.session.commit()
+
+        return '성공적으로 등록되었습니다.', 200
+
 
 class ApiGoalCommentList(Resource):
 
@@ -248,7 +275,7 @@ class ApiGoalCommentList(Resource):
             comment_info['user_id'] = comment.user_id
             comment_info['goal_id'] = comment.goal_id
             comment_info['user_name'] = comment.user.username
-            comment_info['content'] = comment.content
+            comment_info['contents'] = comment.contents
             comment_info['timestamp'] = comment.created.strftime('%Y-%m-%d')
             comment_info['reactions'] = []
             for reaction in comment.reactions:
@@ -267,6 +294,24 @@ class ApiGoalCommentList(Resource):
 class ApiGoalComment(Resource):
 
     method_decorators = [authenticate]
+
+    def post(self):
+        token = request.headers.get('Authorization')
+        user_id = decode_info(token, ['id'])['id']
+
+        json_data = request.get_json(force=True)
+
+        try:
+            api_json_validator(json_data, ['goal_id', 'contents'])
+        except Exception as error:
+            abort(400, message="{}".format(error))
+
+        new_comment = Comment(
+            user_id=user_id, goal_id=json_data['goal_id'], contents=json_data['contents'])
+        db.session.add(new_comment)
+        db.session.commit()
+
+        return '성공적으로 등록되었습니다.', 200
 
     def delete(self, comment_id):
         deleting_target = Comment.query.filter_by(
