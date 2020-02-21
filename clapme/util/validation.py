@@ -5,6 +5,7 @@ class RequiredException(Exception):
 
 def api_json_validator(json, required_keys):
     data_keys = json.keys()
+    print('data_keys', data_keys)
 
     for required_key in required_keys:
         if required_key not in data_keys:
