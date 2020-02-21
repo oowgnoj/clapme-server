@@ -34,7 +34,7 @@ class ApiGoal(Resource):
         db.session.refresh(new_goal)
 
         new_user_goal = UserGoal(
-            user_id=user_id, goal_id=new_goal.id, subscribe=True, isAccepted=True)
+            user_id=user_id, goal_id=new_goal.id, subscribe=True, isAccepted=True, is_owner=True)
 
         db.session.add(new_user_goal)
         db.session.commit()
@@ -174,7 +174,7 @@ class ApiUserGoal(Resource):
             abort(400, message="{}".format(error))
 
         user_goal_new_connection = UserGoal(
-            user_id=user_id, goal_id=json_data['goal_id'], subscribe=False, isAccepted=False)
+            user_id=user_id, goal_id=json_data['goal_id'], subscribe=False, isAccepted=False, is_owner=False)
 
         db.session.add(user_goal_new_connection)
         db.session.commit()
@@ -199,6 +199,8 @@ class ApiUserGoal(Resource):
             updating_target.subscribe = json_data['subscribe']
         if json_data.get('isAccepted') != None:
             updating_target.isAccepted = json_data['isAccepted']
+        if json_data.get('is_owner') != None:
+            updating_target.is_owner = json_data['is_owner']
         db.session.commit()
 
         return '성공적으로 수정되었습니다', 200
