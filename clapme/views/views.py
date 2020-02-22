@@ -18,7 +18,9 @@ class ApiGoal(Resource):
             'id': goal.id,
             'description': goal.description,
             'interval': goal.interval,
-            'times': goal.times
+            'times': goal.times,
+            'title': goal.title,
+            'thumbnail': goal.thumbnail,
         }
 
     def post(self):
@@ -43,14 +45,17 @@ class ApiGoal(Resource):
 
     def patch(self):
         json_data = request.get_json(force=True)
-        target = Goal.query.filter_by(id=json_data['id']).first()
-        for item in json_data:
-            if json_data[item] != None:
-                setattr(target, item, json_data[item])
-        db.session.commit()
-        response = to_dict(
-            target, ['title', 'description', 'interval', 'times', 'thumbnail'])
-        return response, '성공적으로 변경되었습니다.'
+
+        request_items = extract(
+            json_data, ['id', 'description', 'interval', 'times', 'title', 'thumbnail'])
+        Goal.query.filter_by(id=json_data['id']).update(request_items)
+        # for item in request_items:
+        #     target[item] = request_items[item]
+        #     setattr(target, item, json_data[item])
+        #     db.session.commit()
+        # User.query.filter_by(id=user_id).update(updating_info)
+
+        return '성공적으로 변경되었습니다.'
 
     def delete(self, id):
         target = Goal.query.filter_by(id=id).first()
