@@ -1,11 +1,12 @@
 from flask import Flask, g
 from flask_restful import Resource, Api
 
-from clapme.models import initialize_db
-from clapme.views import initialize_routes
+from .models import initialize_db
+from .views import initialize_routes
 
 app = Flask(__name__)
-app.config.from_object('clapme.config')
+app.config.from_object('config')
+
 
 api = Api(app)
 initialize_routes(api)
