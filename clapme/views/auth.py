@@ -3,9 +3,9 @@ from flask import jsonify, request, Flask, make_response
 from jose import jwt
 from functools import wraps
 
-from clapme.models import db, User, UserGoal, Goal, Success, Reaction, Comment
-from clapme.util.helper import to_dict, extract
-from clapme.util.validation import api_json_validator
+from ..models import db, User, UserGoal, Goal, Success, Reaction, Comment
+from ..util.helper import to_dict, extract
+from ..util.validation import api_json_validator
 
 
 key = 'coffee'
@@ -31,6 +31,25 @@ class ApiLogin(Resource):
         encoded = jwt.encode(payload, key, algorithm='HS256')
         result = {'access-token': encoded}
         return result, 200
+
+
+class ApiSignup(Resource):
+    def post(self):
+        json_data = request.get_json(force=True)
+
+        try:
+            api_json_validator(json_data, ['email', 'password', 'username'])
+        except Exception as error:
+            abort(400, message="{}".format(error))
+
+        signup_info = extract(
+            json_data, ['email', 'password', 'username'])
+
+        new_user = User(**signup_info)
+        db.session.add(new_user)
+        db.session.commit()
+
+        return '성공적으로 등록되었습니다.', 200
 
 
 def authenticate(func):
