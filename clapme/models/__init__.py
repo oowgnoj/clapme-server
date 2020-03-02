@@ -103,13 +103,13 @@ class Goal(db.Model):
 
     user_goals = db.relationship(
         'UserGoal', cascade="all,delete", backref='goal', lazy=True)
-    successes = db.relationship(
-        'Success', cascade="all,delete", backref='goal', lazy=True)
+    routines = db.relationship(
+        'Routine', cascade="all,delete", backref='goal', lazy=True)
     comments = db.relationship(
         'Comment', cascade="all,delete", backref='goal', lazy=True)
 
 
-class Success(db.Model):
+class Routine(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer,
@@ -118,6 +118,59 @@ class Success(db.Model):
     goal_id = db.Column(db.Integer,
                         db.ForeignKey('goal.id'),
                         nullable=False)
+    mon = db.Column(db.Boolean,
+                    index=True,
+                    unique=False,
+                    nullable=False
+                    default=False)
+    tue = db.Column(db.Boolean,
+                    index=True,
+                    unique=False,
+                    nullable=False
+                    default=False)
+    wed = db.Column(db.Boolean,
+                    index=True,
+                    unique=False,
+                    nullable=False
+                    default=False)
+    thu = db.Column(db.Boolean,
+                    index=True,
+                    unique=False,
+                    nullable=False
+                    default=False)
+    fri = db.Column(db.Boolean,
+                    index=True,
+                    unique=False,
+                    nullable=False
+                    default=False)
+    sat = db.Column(db.Boolean,
+                    index=True,
+                    unique=False,
+                    nullable=False
+                    default=False)
+    sun = db.Column(db.Boolean,
+                    index=True,
+                    unique=False,
+                    nullable=False
+                    default=False)
+    time_at = db.Column(db.integer,
+                        nullable=False)
+    created = db.Column(db.DateTime,
+                        nullable=False,
+                        default=datetime.utcnow)
+    successes = db.relationship(
+        'Success', cascade="all,delete", backref='routine', lazy=True)
+
+
+class Success(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer,
+                        db.ForeignKey('user.id'),
+                        nullable=False)
+    routine_id = db.Column(db.Integer,
+                           db.ForeignKey('routine.id'),
+                           nullable=False)
     created = db.Column(db.DateTime,
                         nullable=False,
                         default=datetime.utcnow)

@@ -2,7 +2,7 @@ from flask_restful import reqparse, abort, Api, Resource
 from flask import jsonify, request, Flask, make_response
 from enum import Enum
 
-from ..models import db, User, UserGoal, Goal, Success, Reaction, Comment
+from ..models import db, User, UserGoal, Goal, Routine, Success, Reaction, Comment
 from ..util.helper import decode_info, to_dict, extract
 from ..util.validation import api_json_validator
 from .auth import authenticate
@@ -64,28 +64,28 @@ class ApiGoal(Resource):
         return '데이터가 성공적으로 삭제되었습니다.'
 
 
-class ApiHistory(Resource):
-    def get(self, id):
+# class ApiHistory(Resource):
+#     def get(self, id):
 
-        user_goal_list = UserGoal.query.filter_by(user_id=id).all()
-        goal_success = []
+#         user_goal_list = UserGoal.query.filter_by(user_id=id).all()
+#         goal_success = []
 
-        for user_goal in user_goal_list:
-            success_list = {}
-            success_list['goal_id'] = user_goal.goal.id
-            success_list['goal_title'] = user_goal.goal.title
-            for success in user_goal.goal.successes:
-                success_user = User.query.filter_by(id=success.user_id).first()
-                success_list['success_id'] = success.id
-                success_list['success_created'] = success.created.strftime(
-                    '%Y-%m-%d %H:%M:%S')
-                success_list['success_user_id'] = success.user_id
-                success_list['success_user_name'] = success_user.username
-                success_list['success_user_profile'] = success_user.profile
-                success_list['success_user_profile_pic'] = success_user.profile_pic
-                goal_success.append(success_list)
+#         for user_goal in user_goal_list:
+#             success_list = {}
+#             success_list['goal_id'] = user_goal.goal.id
+#             success_list['goal_title'] = user_goal.goal.title
+#             for success in user_goal.goal.successes:
+#                 success_user = User.query.filter_by(id=success.user_id).first()
+#                 success_list['success_id'] = success.id
+#                 success_list['success_created'] = success.created.strftime(
+#                     '%Y-%m-%d %H:%M:%S')
+#                 success_list['success_user_id'] = success.user_id
+#                 success_list['success_user_name'] = success_user.username
+#                 success_list['success_user_profile'] = success_user.profile
+#                 success_list['success_user_profile_pic'] = success_user.profile_pic
+#                 goal_success.append(success_list)
 
-        return goal_success
+#         return goal_success
 
 
 class ApiReaction(Resource):
@@ -222,11 +222,12 @@ class ApiUserGoal(Resource):
         return '성공적으로 삭제되었습니다', 200
 
 
-class ApiGoalSuccess(Resource):
-    def get(self, goal_id):
+class ApiRoutineSuccess(Resource):
+    def get(self, routine_id):
         result = []
 
-        successes_of_goal = Success.query.filter_by(goal_id=goal_id).all()
+        successes_of_goal = Success.query.filter_by(
+            routine_id=routine_id).all()
 
         for success in successes_of_goal:
             print('success', success)
@@ -255,12 +256,12 @@ class ApiGoalSuccess(Resource):
         json_data = request.get_json(force=True)
 
         try:
-            api_json_validator(json_data, ['goal_id'])
+            api_json_validator(json_data, ['routine_id'])
         except Exception as error:
             abort(400, message="{}".format(error))
 
         new_success = Success(
-            user_id=user_id, goal_id=json_data['goal_id'])
+            user_id=user_id, routine_id=json_data['routine_id'])
         db.session.add(new_success)
         db.session.commit()
 
