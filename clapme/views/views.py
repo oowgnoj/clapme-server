@@ -6,6 +6,8 @@ from ..models import db, User, UserGoal, Goal, Routine, Success, Reaction, Comme
 from ..util.helper import decode_info, to_dict, extract
 from ..util.validation import api_json_validator
 from .auth import authenticate
+from datetime import date
+
 
 parser = reqparse.RequestParser()
 
@@ -49,11 +51,6 @@ class ApiGoal(Resource):
         request_items = extract(
             json_data, ['id', 'description', 'interval', 'times', 'title', 'thumbnail'])
         Goal.query.filter_by(id=json_data['id']).update(request_items)
-        # for item in request_items:
-        #     target[item] = request_items[item]
-        #     setattr(target, item, json_data[item])
-        #     db.session.commit()
-        # User.query.filter_by(id=user_id).update(updating_info)
 
         return '성공적으로 변경되었습니다.'
 
@@ -230,7 +227,6 @@ class ApiRoutineSuccess(Resource):
             routine_id=routine_id).all()
 
         for success in successes_of_goal:
-            print('success', success)
             success_info = {}
             success_info['id'] = success.id
             success_info['user_id'] = success.user_id
@@ -238,7 +234,6 @@ class ApiRoutineSuccess(Resource):
             success_info['timestamp'] = success.created.strftime('%Y-%m-%d')
             success_info['reactions'] = []
             for reaction in success.reactions:
-                print('reaction', reaction)
                 reaction_info = {}
                 reaction_info['id'] = reaction.id
                 reaction_info['user_id'] = reaction.user.id
@@ -357,3 +352,24 @@ class ApiUser(Resource):
         db.session.commit()
 
         return '성공적으로 수정되었습니다', 200
+
+
+class ApiRoutine(Resource):
+
+    def post(self):
+        json_data = request.get_json(force=True)
+
+        def str_to_bool(s):
+            if s == 'True':
+                return True
+            elif s == 'False':
+                return False
+            else:
+                raise ValueError
+
+        new_routine = Routine(
+            user_id=json_data['user_id'], goal_id=json_data['goal_id'], mon=str_to_bool(json_data['mon']), tue=str_to_bool(json_data['tue']), wed=str_to_bool(json_data['wed']), thu=str_to_bool(json_data['thu']), fri=str_to_bool(json_data['fri']), sat=str_to_bool(json_data['sat']), sun=str_to_bool(json_data['sun']), time_at=json_data['time_at'])
+        db.session.add(new_routine)
+        db.session.commit()
+
+        return '성공적으로 등록되었습니다.', 200

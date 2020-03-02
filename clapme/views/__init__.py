@@ -1,7 +1,7 @@
 from flask_restful import Resource
 
 from .auth import ApiLogin, ApiSignup
-from .views import ApiUserGoal, ApiGoalSuccess, ApiGoalCommentList, ApiGoalComment, ApiUser, ApiGoal, ApiHistory, ApiReaction, ApiUserReaction
+from .views import ApiUserGoal, ApiGoalCommentList, ApiRoutineSuccess, ApiGoalComment, ApiUser, ApiGoal, ApiReaction, ApiUserReaction, ApiRoutine
 
 
 class HelloWorld(Resource):
@@ -15,12 +15,13 @@ def initialize_routes(api):
     api.add_resource(ApiSignup, '/signup/')
     api.add_resource(ApiGoal, '/goal/', '/goal/<int:id>')
     api.add_resource(ApiUserGoal, '/user-goal/', '/user-goal/<int:goal_id>')
-    api.add_resource(ApiGoalSuccess, '/goal-success/',
+    api.add_resource(ApiRoutineSuccess, '/goal-success/',
                      '/goal-success/<int:goal_id>')
     api.add_resource(ApiGoalCommentList, '/goal-comment/<int:goal_id>')
     api.add_resource(ApiGoalComment, '/goal-comment/',
                      '/goal-comment/<int:comment_id>')
     api.add_resource(ApiUser, '/user/')
-    api.add_resource(ApiHistory, '/history/<int:id>')
+    api.add_resource(ApiRoutine, '/routine/')
+    # api.add_resource(ApiHistory, '/history/<int:id>')
     api.add_resource(ApiReaction, '/reaction/', '/reaction/<int:id>')
     api.add_resource(ApiUserReaction, '/user-reaction/<int:id>')
