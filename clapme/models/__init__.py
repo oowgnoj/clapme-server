@@ -115,6 +115,8 @@ class Routine(db.Model):
     goal_id = db.Column(db.Integer,
                         db.ForeignKey('goal.id'),
                         nullable=False)
+    title = db.Column(db.String(30),
+                      nullable=False)
     mon = db.Column(db.Boolean,
                     index=True,
                     unique=False,

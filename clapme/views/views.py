@@ -3,7 +3,7 @@ from flask import jsonify, request, Flask, make_response
 from enum import Enum
 
 from ..models import db, User, UserGoal, Goal, Routine, Success, Reaction, Comment
-from ..util.helper import decode_info, to_dict, extract
+from ..util.helper import decode_info, to_dict, extract, str_to_bool
 from ..util.validation import api_json_validator
 from .auth import authenticate
 from datetime import date
@@ -356,20 +356,63 @@ class ApiUser(Resource):
 
 class ApiRoutine(Resource):
 
+    def get(self, goal_id=None, day_of_week=None):
+        if(goal_id == None):
+            token = request.headers.get('Authorization')
+            user_id = decode_info(token, ['id'])['id']
+            if(day_of_week == None):
+                user_routines = Routine.query.filter_by(user_id=user_id).all()
+                res = []
+                for user_routine in user_routines:
+                    routine = to_dict(
+                        user_routine, ['id', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at', 'created'])
+                    res.append(routine)
+
+                return res, 200
+
+            else:
+                user_routines = Routine.query.filter_by(user_id=user_id).all()
+                res = []
+                for user_routine in user_routines:
+                    routine = to_dict(user_routine, [
+                                      'id', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at', 'created'])
+                    if routine[day_of_week]:
+                        res.append(routine)
+
+                return res, 200
+
+        elif(goal_id != None):
+            goal_routines = Routine.query.filter_by(goal_id=goal_id).all()
+            res = []
+            for goal_routine in goal_routines:
+                routine = to_dict(goal_routine, [
+                                  'id', 'title', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at', 'created'])
+                res.append(routine)
+            # res = getattr(goal_routine, 'title')
+            return res, 200
+
     def post(self):
         json_data = request.get_json(force=True)
 
-        def str_to_bool(s):
-            if s == 'True':
-                return True
-            elif s == 'False':
-                return False
-            else:
-                raise ValueError
-
         new_routine = Routine(
-            user_id=json_data['user_id'], goal_id=json_data['goal_id'], mon=str_to_bool(json_data['mon']), tue=str_to_bool(json_data['tue']), wed=str_to_bool(json_data['wed']), thu=str_to_bool(json_data['thu']), fri=str_to_bool(json_data['fri']), sat=str_to_bool(json_data['sat']), sun=str_to_bool(json_data['sun']), time_at=json_data['time_at'])
+            title=json_data['title'], user_id=json_data['user_id'], goal_id=json_data['goal_id'], mon=str_to_bool(json_data['mon']), tue=str_to_bool(json_data['tue']), wed=str_to_bool(json_data['wed']), thu=str_to_bool(json_data['thu']), fri=str_to_bool(json_data['fri']), sat=str_to_bool(json_data['sat']), sun=str_to_bool(json_data['sun']), time_at=json_data['time_at'])
         db.session.add(new_routine)
         db.session.commit()
 
         return '성공적으로 등록되었습니다.', 200
+
+    def patch(self):
+        json_data = request.get_json(force=True)
+
+        request_items = extract(
+            json_data, ['id', 'title', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at', 'created'])
+        Routine.query.filter_by(id=json_data['id']).update(request_items)
+        db.session.commit()
+
+        return '성공적으로 변경되었습니다.'
+
+    def delete(self, routine_id):
+        target = Routine.query.filter_by(id=routine_id).first()
+        db.session.delete(target)
+        db.session.commit()
+        return '데이터가 성공적으로 삭제되었습니다.'
