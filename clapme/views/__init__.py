@@ -22,6 +22,6 @@ def initialize_routes(api):
                      '/goal-comment/<int:comment_id>')
     api.add_resource(ApiUser, '/user/')
     api.add_resource(ApiRoutine, '/routine/', '/routine/<int:routine_id>',
-                     '/routine/goal/<int:goal_id>', '/routine/user/<day_of_week>')
+                     '/routine/goal/<int:goal_id>', '/routine/<day_of_week>')
     api.add_resource(ApiReaction, '/reaction/', '/reaction/<int:id>')
     api.add_resource(ApiUserReaction, '/user-reaction/<int:id>')
