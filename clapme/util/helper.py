@@ -14,9 +14,11 @@ def decode_info(token, attrs):
 
 # [helper 함수] DB 에서 불러온 리턴값인 query object 중 일부 필드만 객체로 추출
 def to_dict(query, attrs):
+    print(query, attrs)
     result = {}
     for attr in attrs:
         result[attr] = getattr(query, attr)
+
     return result
 
 
@@ -41,3 +43,13 @@ def to_dict_nested(query, attrs, nested_attrs):
         else:
             result[attr] = getattr(query, attr)
     return result
+
+
+# [helper 함수] sting -> boolean
+def str_to_bool(s):
+    if s == 'True':
+        return True
+    elif s == 'False':
+        return False
+    else:
+        raise ValueError

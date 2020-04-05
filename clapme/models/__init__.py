@@ -4,11 +4,8 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
-print('here1')
-
 
 def initialize_db(app):
-    print('here2')
     db.init_app(app)
 
 
@@ -118,42 +115,44 @@ class Routine(db.Model):
     goal_id = db.Column(db.Integer,
                         db.ForeignKey('goal.id'),
                         nullable=False)
+    title = db.Column(db.String(30),
+                      nullable=False)
     mon = db.Column(db.Boolean,
                     index=True,
                     unique=False,
-                    nullable=False
+                    nullable=False,
                     default=False)
     tue = db.Column(db.Boolean,
                     index=True,
                     unique=False,
-                    nullable=False
+                    nullable=False,
                     default=False)
     wed = db.Column(db.Boolean,
                     index=True,
                     unique=False,
-                    nullable=False
+                    nullable=False,
                     default=False)
     thu = db.Column(db.Boolean,
                     index=True,
                     unique=False,
-                    nullable=False
+                    nullable=False,
                     default=False)
     fri = db.Column(db.Boolean,
                     index=True,
                     unique=False,
-                    nullable=False
+                    nullable=False,
                     default=False)
     sat = db.Column(db.Boolean,
                     index=True,
                     unique=False,
-                    nullable=False
+                    nullable=False,
                     default=False)
     sun = db.Column(db.Boolean,
                     index=True,
                     unique=False,
-                    nullable=False
+                    nullable=False,
                     default=False)
-    time_at = db.Column(db.integer,
+    time_at = db.Column(db.Integer,
                         nullable=False)
     created = db.Column(db.DateTime,
                         nullable=False,
@@ -215,6 +214,3 @@ class Comment(db.Model):
         'Reaction', cascade="all,delete", backref='comment', lazy=True)
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
-
-
-print('here')
