@@ -2,7 +2,7 @@ from flask_restful import reqparse, abort, Api, Resource
 from flask import jsonify, request, Flask, make_response
 from enum import Enum
 
-from ..models import db, User, UserGoal, Goal, Routine, Success, Reaction, Comment
+from ..models import db, User, UserGoal, Goal, Routine, Success, Reaction, Comment, RoutineRecommend
 from ..util.helper import decode_info, to_dict, extract, str_to_bool
 from ..util.validation import api_json_validator
 from .auth import authenticate
@@ -416,3 +416,9 @@ class ApiRoutine(Resource):
         db.session.delete(target)
         db.session.commit()
         return '데이터가 성공적으로 삭제되었습니다.'
+
+class ApiRecommendList(Resource):
+    def get(self):
+        RoutineRecommendList = RoutineRecommend.all()
+        
+        return RoutineRecommendList
