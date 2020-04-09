@@ -47,9 +47,9 @@ def to_dict_nested(query, attrs, nested_attrs):
 
 # [helper 함수] sting -> boolean
 def str_to_bool(s):
-    if s == 'True':
+    if s == 'True' or 'true':
         return True
-    elif s == 'False':
+    elif s == 'False' or 'false':
         return False
     else:
         raise ValueError

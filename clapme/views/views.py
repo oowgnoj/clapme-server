@@ -393,7 +393,6 @@ class ApiRoutine(Resource):
 
     def post(self):
         json_data = request.get_json(force=True)
-
         new_routine = Routine(
             title=json_data['title'], user_id=json_data['user_id'], goal_id=json_data['goal_id'], mon=str_to_bool(json_data['mon']), tue=str_to_bool(json_data['tue']), wed=str_to_bool(json_data['wed']), thu=str_to_bool(json_data['thu']), fri=str_to_bool(json_data['fri']), sat=str_to_bool(json_data['sat']), sun=str_to_bool(json_data['sun']), time_at=json_data['time_at'])
         db.session.add(new_routine)
@@ -417,8 +416,12 @@ class ApiRoutine(Resource):
         db.session.commit()
         return '데이터가 성공적으로 삭제되었습니다.'
 
+
 class ApiRecommendList(Resource):
     def get(self):
-        RoutineRecommendList = RoutineRecommend.all()
-        
-        return RoutineRecommendList
+        RoutineRecommendList = RoutineRecommend.query.all()
+        res = []
+        for routine in RoutineRecommendList:
+            res.append(to_dict(routine, ['id', 'title']))
+
+        return res, 200
