@@ -29,7 +29,8 @@ class ApiLogin(Resource):
         }
 
         encoded = jwt.encode(payload, key, algorithm='HS256')
-        result = {'access-token': encoded}
+        result = {'access-token': encoded, 'username': payload.username, 'email': payload.email,
+                  'profile': payload.profile, 'profile_pic': payload.profile_pic}
         return result, 200
 
 

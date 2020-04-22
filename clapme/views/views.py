@@ -365,7 +365,7 @@ class ApiRoutine(Resource):
                 res = []
                 for user_routine in user_routines:
                     routine = to_dict(
-                        user_routine, ['id', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at', 'created'])
+                        user_routine, ['id', 'title', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at', 'created'])
                     res.append(routine)
 
                 return res, 200
@@ -375,7 +375,7 @@ class ApiRoutine(Resource):
                 res = []
                 for user_routine in user_routines:
                     routine = to_dict(user_routine, [
-                                      'id', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at', 'created'])
+                                      'id', 'title', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at', 'created'])
                     if routine[day_of_week]:
                         res.append(routine)
 
@@ -393,8 +393,14 @@ class ApiRoutine(Resource):
 
     def post(self):
         json_data = request.get_json(force=True)
+
+        """ goal_id 는 임시로 body param에서 제외하고 post 요청 하고 있습니다 !"""
+        # if json_data['goal_id'] is not None:
+        #     new_routine = Routine(
+        #         title=json_data['title'], user_id=json_data['user_id'], goal_id=json_data['goal_id'], mon=str_to_bool(json_data['mon']), tue=str_to_bool(json_data['tue']), wed=str_to_bool(json_data['wed']), thu=str_to_bool(json_data['thu']), fri=str_to_bool(json_data['fri']), sat=str_to_bool(json_data['sat']), sun=str_to_bool(json_data['sun']), time_at=json_data['time_at'])
+
         new_routine = Routine(
-            title=json_data['title'], user_id=json_data['user_id'], goal_id=json_data['goal_id'], mon=str_to_bool(json_data['mon']), tue=str_to_bool(json_data['tue']), wed=str_to_bool(json_data['wed']), thu=str_to_bool(json_data['thu']), fri=str_to_bool(json_data['fri']), sat=str_to_bool(json_data['sat']), sun=str_to_bool(json_data['sun']), time_at=json_data['time_at'])
+            title=json_data['title'], user_id=json_data['user_id'], mon=str_to_bool(json_data['mon']), tue=str_to_bool(json_data['tue']), wed=str_to_bool(json_data['wed']), thu=str_to_bool(json_data['thu']), fri=str_to_bool(json_data['fri']), sat=str_to_bool(json_data['sat']), sun=str_to_bool(json_data['sun']), time_at=json_data['time_at'])
         db.session.add(new_routine)
         db.session.commit()
 
