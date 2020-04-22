@@ -114,7 +114,7 @@ class Routine(db.Model):
                         nullable=False)
     goal_id = db.Column(db.Integer,
                         db.ForeignKey('goal.id'),
-                        nullable=False)
+                        nullable=True)
     title = db.Column(db.String(30),
                       nullable=False)
     mon = db.Column(db.Boolean,
@@ -214,6 +214,7 @@ class Comment(db.Model):
         'Reaction', cascade="all,delete", backref='comment', lazy=True)
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
 
 class RoutineRecommend(db.Model):
     id = db.Column(db.Integer, primary_key=True)
