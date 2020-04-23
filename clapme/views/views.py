@@ -104,11 +104,13 @@ class ApiReaction(Resource):
 
 
 class ApiUserReaction(Resource):
-    def get(self, id):
+    def get(self):
+        token = request.headers.get('Authorization')
+        user_id = decode_info(token, ['id'])['id']
 
         user_success_reaction_list = []
 
-        user_success_list = Success.query.filter_by(user_id=id).all()
+        user_success_list = Success.query.filter_by(user_id=user_id).all()
         for user_success in user_success_list:
             user_success_reaction = {}
             user_success_reaction['success_id'] = user_success.id
