@@ -14,7 +14,6 @@ def decode_info(token, attrs):
 
 # [helper 함수] DB 에서 불러온 리턴값인 query object 중 일부 필드만 객체로 추출
 def to_dict(query, attrs):
-    print(query, attrs)
     result = {}
     for attr in attrs:
         result[attr] = getattr(query, attr)
