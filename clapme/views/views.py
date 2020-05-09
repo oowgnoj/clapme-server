@@ -14,7 +14,10 @@ parser = reqparse.RequestParser()
 
 class ApiGoal(Resource):
 
-    def get(self, id):
+    def get(self):
+        token = request.headers.get('Authorization')
+        user_id = decode_info(token, ['id'])['id']
+
         goal = Goal.query.filter_by(id=id).first()
         return {
             'id': goal.id,
@@ -365,7 +368,7 @@ class ApiRoutine(Resource):
                 res = []
                 for user_routine in user_routines:
                     routine = to_dict(
-                        user_routine, ['id', 'title', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at', 'created'])
+                        user_routine, ['id', 'title', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at'])
                     res.append(routine)
 
                 return res, 200
@@ -375,7 +378,7 @@ class ApiRoutine(Resource):
                 res = []
                 for user_routine in user_routines:
                     routine = to_dict(user_routine, [
-                                      'id', 'title', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at', 'created'])
+                                      'id', 'title', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at'])
                     if routine[day_of_week]:
                         res.append(routine)
 
@@ -386,7 +389,7 @@ class ApiRoutine(Resource):
             res = []
             for goal_routine in goal_routines:
                 routine = to_dict(goal_routine, [
-                                  'id', 'title', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at', 'created'])
+                                  'id', 'title', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at'])
                 res.append(routine)
             # res = getattr(goal_routine, 'title')
             return res, 200
@@ -394,13 +397,26 @@ class ApiRoutine(Resource):
     def post(self):
         json_data = request.get_json(force=True)
 
+        token = request.headers.get('Authorization')
+        user_id = decode_info(token, ['id'])['id']
+
+
         """ goal_id 는 임시로 body param에서 제외하고 post 요청 하고 있습니다 !"""
         # if json_data['goal_id'] is not None:
         #     new_routine = Routine(
         #         title=json_data['title'], user_id=json_data['user_id'], goal_id=json_data['goal_id'], mon=str_to_bool(json_data['mon']), tue=str_to_bool(json_data['tue']), wed=str_to_bool(json_data['wed']), thu=str_to_bool(json_data['thu']), fri=str_to_bool(json_data['fri']), sat=str_to_bool(json_data['sat']), sun=str_to_bool(json_data['sun']), time_at=json_data['time_at'])
 
         new_routine = Routine(
-            title=json_data['title'], user_id=json_data['user_id'], mon=str_to_bool(json_data['mon']), tue=str_to_bool(json_data['tue']), wed=str_to_bool(json_data['wed']), thu=str_to_bool(json_data['thu']), fri=str_to_bool(json_data['fri']), sat=str_to_bool(json_data['sat']), sun=str_to_bool(json_data['sun']), time_at=json_data['time_at'])
+            title=json_data['title'], 
+            user_id=user_id, 
+            mon=str_to_bool(json_data['mon']), 
+            tue=str_to_bool(json_data['tue']), 
+            wed=str_to_bool(json_data['wed']), 
+            thu=str_to_bool(json_data['thu']), 
+            fri=str_to_bool(json_data['fri']), 
+            sat=str_to_bool(json_data['sat']), 
+            sun=str_to_bool(json_data['sun']), 
+            time_at=json_data['time_at'])
         db.session.add(new_routine)
         db.session.commit()
 
@@ -410,7 +426,7 @@ class ApiRoutine(Resource):
         json_data = request.get_json(force=True)
 
         request_items = extract(
-            json_data, ['id', 'title', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at', 'created'])
+            json_data, ['id', 'title', 'goal_id', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'time_at'])
         Routine.query.filter_by(id=json_data['id']).update(request_items)
         db.session.commit()
 
