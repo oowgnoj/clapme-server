@@ -66,7 +66,6 @@ def authenticate(func):
         # custom account lookup function
 
         if token['Authorization'] != None:
-            print('통과가 되었다는거니?')
             return func(*args, **kwargs)
 
         abort(401)
