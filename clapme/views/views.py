@@ -15,9 +15,6 @@ parser = reqparse.RequestParser()
 class ApiGoal(Resource):
 
     def get(self, goal_id):
-        # token = request.headers.get('Authorization')
-        # user_id = decode_info(token, ['id'])['id']
-
         goal = Goal.query.filter_by(id=goal_id).first()
         return {
             'id': goal.id,
@@ -163,6 +160,10 @@ class ApiUserGoal(Resource):
             info['user_goal_id'] = goal.user_goals[0].id
             info['goal_id'] = goal.id
             info['title'] = goal.title
+            info['interval'] = goal.interval
+            info['description'] = goal.description
+            info['times'] = goal.times
+            info['thumbnail'] = goal.thumbnail
             result.append(info)
 
         return result
