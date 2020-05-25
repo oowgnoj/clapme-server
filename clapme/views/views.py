@@ -50,7 +50,9 @@ class ApiGoal(Resource):
 
         request_items = extract(
             json_data, ['id', 'description', 'interval', 'times', 'title', 'thumbnail'])
+        print(request_items)
         Goal.query.filter_by(id=json_data['id']).update(request_items)
+        db.session.commit()
 
         return '성공적으로 변경되었습니다.'
 
@@ -157,8 +159,7 @@ class ApiUserGoal(Resource):
 
         for goal in goal_list:
             info = {}
-            info['user_goal_id'] = goal.user_goals[0].id
-            info['goal_id'] = goal.id
+            info['id'] = goal.id
             info['title'] = goal.title
             info['interval'] = goal.interval
             info['description'] = goal.description
