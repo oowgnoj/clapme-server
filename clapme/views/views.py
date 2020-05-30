@@ -14,11 +14,10 @@ parser = reqparse.RequestParser()
 
 class ApiGoal(Resource):
 
-    def get(self):
+    def get(self, goal_id):
         token = request.headers.get('Authorization')
         user_id = decode_info(token, ['id'])['id']
-
-        goal = Goal.query.filter_by(id=id).first()
+        goal = Goal.query.filter_by(user_id=id).first()
         return {
             'id': goal.id,
             'description': goal.description,
@@ -53,7 +52,9 @@ class ApiGoal(Resource):
 
         request_items = extract(
             json_data, ['id', 'description', 'interval', 'times', 'title', 'thumbnail'])
+        print(request_items)
         Goal.query.filter_by(id=json_data['id']).update(request_items)
+        db.session.commit()
 
         return '성공적으로 변경되었습니다.'
 
@@ -66,10 +67,8 @@ class ApiGoal(Resource):
 
 # class ApiHistory(Resource):
 #     def get(self, id):
-
 #         user_goal_list = UserGoal.query.filter_by(user_id=id).all()
 #         goal_success = []
-
 #         for user_goal in user_goal_list:
 #             success_list = {}
 #             success_list['goal_id'] = user_goal.goal.id
@@ -84,19 +83,15 @@ class ApiGoal(Resource):
 #                 success_list['success_user_profile'] = success_user.profile
 #                 success_list['success_user_profile_pic'] = success_user.profile_pic
 #                 goal_success.append(success_list)
-
 #         return goal_success
 
 
 class ApiReaction(Resource):
     def post(self):
-        token = request.headers.get('Authorization')
-        user_id = decode_info(token, ['id'])['id']
-
         json_data = request.get_json(force=True)
 
         NewReaction = Reaction(
-            user_id=user_id, comment_id=json_data['comment_id'], type=json_data['type'])
+            user_id=json_data['user_id'], comment_id=json_data['comment_id'], type=json_data['type'])
         db.session.add(NewReaction)
         db.session.commit()
         return '데이터가 성공적으로 추가되었습니다', 200
@@ -163,9 +158,12 @@ class ApiUserGoal(Resource):
 
         for goal in goal_list:
             info = {}
-            info['user_goal_id'] = goal.user_goals[0].id
-            info['goal_id'] = goal.id
+            info['id'] = goal.id
             info['title'] = goal.title
+            info['interval'] = goal.interval
+            info['description'] = goal.description
+            info['times'] = goal.times
+            info['thumbnail'] = goal.thumbnail
             result.append(info)
 
         return result

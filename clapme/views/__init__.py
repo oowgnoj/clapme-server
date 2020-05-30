@@ -13,7 +13,7 @@ def initialize_routes(api):
     api.add_resource(HelloWorld, '/')
     api.add_resource(ApiLogin, '/login')
     api.add_resource(ApiSignup, '/signup')
-    api.add_resource(ApiGoal, '/goal', '/goal/<int:id>')
+    api.add_resource(ApiGoal, '/goal', '/goal/<int:goal_id>')
     api.add_resource(ApiUserGoal, '/user-goal', '/user-goal/<int:goal_id>')
     api.add_resource(ApiRoutineSuccess, '/goal-success',
                      '/goal-success/<int:goal_id>')

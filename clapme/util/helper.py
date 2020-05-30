@@ -28,7 +28,6 @@ def extract(json, attrs):
     for key in keys:
         if key in attrs:
             result[key] = json[key]
-    print('result', result)
     return result
 
 
@@ -46,9 +45,9 @@ def to_dict_nested(query, attrs, nested_attrs):
 
 # [helper 함수] sting -> boolean
 def str_to_bool(s):
-    if s == 'True' or 'true':
+    if s == 'true':
         return True
-    elif s == 'False' or 'false':
+    elif s == 'false':
         return False
     else:
         raise ValueError
