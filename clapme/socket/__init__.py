@@ -1,6 +1,47 @@
-from flask_socketio import SocketIO, send, emit, join_room
+from flask import session
+from flask_socketio import SocketIO, send, emit, join_room, leave_room
+from ..models import db, Comment
+
 
 socketio = SocketIO()
+
+
+def initialize_socket(app):
+    return socketio.init_app(app, logger=True, engineio_logger=True, cors_allowed_origins="*")
+
+# -*- coding: utf-8 -*-
+
+
+@socketio.on('joined', namespace='/goal')
+def joined(comment):
+    """유저가 해당 goal 방으로 입장"""
+    name = comment.get('name')
+    goal_id = comment.get('goal_id')
+    join_room(goal_id)
+    emit('status', {'msg': comment.get('name') +
+                    ' has entered the room.'}, room=goal_id)
+
+
+@socketio.on('comment', namespace='/goal')
+def post_comment(comment):
+    """comment 작성시"""
+
+    goal_id = comment.get('goal_id')
+    text = comment.get('text')
+    new_comment = Comment(user_id=2, goal_id=goal_id,
+                          contents=text)  # 임시로 2를 넣어둘게요 !
+    db.session.add(new_comment)
+    db.session.commit()
+
+    emit('comment', {'goal_id': goal_id, 'comment': comment,
+                     'name': 'jongwoo'}, room=goal_id)
+
+
+@socketio.on('left', namespace='/goal')
+def left(comment):
+    """방 나감. socket connection 끊기"""
+    goal_id = comment.get('goal_id')
+    leave_room(goal_id)
 
 
 # goal/13 -> 각기 다른 방에서 socket 통신이 되어야한다
@@ -10,22 +51,26 @@ socketio = SocketIO()
 # room 은.. 목표 2번방
 #
 
+# @socketio.on('join', namespace='/goal')
+# def on_join(data):
+#     room = session.get['goal_id']
+#     print('room ', room)
+#     join_room(room)
+#     emit("response", {
+#          'data': data['data'], 'username': 'my name is'}, room=room)
 
-def initialize_socket(app):
-    return socketio.init_app(app)
 
+# @socketio.on('post-comment', namespace='/goal')
+# def post_comment(comment):
+#     room = session['room']
+#     goal_id = session['goal_id']
+#     username = session['username']
+#     print(goal_id)
+#     join_room(room)
 
-@socketio.on('post-comment', namespace='/goal')
-def post_comment(comment):
-    room = data['room']
-    comment = data['comment']
-    username = data['username']
-    join_room(room)
-    # DB 저장
-    emit('comment-posted', {
-        'data': comment,
-        'username': username
-    }, room=room)
+#     emit('comment-posted', {
+#         'data': comment
+#     }, room=room)
 
 # 1. 목표 방에 들어오면서 get 요청으로 초기 ui 용 데이터 받은 후
 # 2. socket 커넥션 맺고 (: 자동으로 해주는 느낌)
@@ -34,21 +79,11 @@ def post_comment(comment):
 # 5. on emit 되었을 때, DB 처리 같은거 하고, 그 다음에 서버 emit
 
 
-@socketio.on('join', namespace='/mynamespace')
-def on_join(data):
-    #username = data['username']
-    room = data['data']
-    join_room(room)
-    #send('abc has entered the room.', room=room)
-    emit("response", {
-         'data': data['data'], 'username': 'my name is'}, room=room)
-
-
-@socketio.on("request", namespace='/mynamespace')
-def post_goal(message):
-    print("request 들어옴")
-    emit("response", {
-         'data': message['data'], 'username': 'my name is'}, broadcast=False)
+# @socketio.on("request", namespace='/mynamespace')
+# def post_goal(message):
+#     print("request 들어옴")
+#     emit("response", {
+#          'data': message['data'], 'username': 'my name is'}, broadcast=False)
 
 # emit(/goal, request, {body: {message: ____, room: 2}})
 

@@ -4,13 +4,13 @@ from .auth import ApiLogin, ApiSignup
 from .views import ApiUserGoal, ApiGoalCommentList, ApiRoutineSuccess, ApiGoalComment, ApiUser, ApiGoal, ApiReaction, ApiUserReaction, ApiRoutine, ApiRecommendList
 
 
-class HelloWorld(Resource):
-    def get(self):
-        return {'hello': 'world'}
+# class HelloWorld(Resource):
+#     def get(self):
+#         return {'hello': 'world'}
 
 
 def initialize_routes(api):
-    api.add_resource(HelloWorld, '/')
+    # api.add_resource(HelloWorld, '/')
     api.add_resource(ApiLogin, '/login')
     api.add_resource(ApiSignup, '/signup')
     api.add_resource(ApiGoal, '/goal', '/goal/<int:goal_id>')
