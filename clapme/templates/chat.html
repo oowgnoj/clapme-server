@@ -18,7 +18,6 @@
           // 안타깝게도 웹소켓 프로토콜 사용시 400 error
           // { transports: ["websocket"] }
         );
-        // socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
         socket.on("connect", function () {
           socket.emit("joined", { name: "jonwoo", goal_id: 11 });
         });
@@ -27,16 +26,16 @@
           $("#chat").scrollTop($("#chat")[0].scrollHeight);
         });
         socket.on("comment", function (data) {
-          $("#chat").val($("#chat").val() + data.comment.text + "\n");
+          console.log(data.comment);
+          $("#chat").val($("#chat").val() + data.comment + "\n");
           $("#chat").scrollTop($("#chat")[0].scrollHeight);
         });
         $("#text").keypress(function (e) {
           var code = e.keyCode || e.which;
           if (code == 13) {
             text = $("#text").val();
-            console.log(text);
             $("#text").val("");
-            socket.emit("comment", { text: text, goal_id: 11 });
+            socket.emit("comment", { comment: text, goal_id: 11, user_id: 2 });
           }
         });
       });

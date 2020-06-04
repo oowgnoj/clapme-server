@@ -1,7 +1,7 @@
 from flask import session
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
-from ..models import db, Comment
-
+from ..models import db, Comment, User
+from ..util.helper import to_dict
 
 socketio = SocketIO()
 
@@ -16,6 +16,7 @@ def initialize_socket(app):
 def joined(comment):
     """유저가 해당 goal 방으로 입장"""
     name = comment.get('name')
+    # user_id = comment.get('user_id')
     goal_id = comment.get('goal_id')
     join_room(goal_id)
     emit('status', {'msg': comment.get('name') +
@@ -25,16 +26,21 @@ def joined(comment):
 @socketio.on('comment', namespace='/goal')
 def post_comment(comment):
     """comment 작성시"""
-
+    user_id = comment.get('user_id')
     goal_id = comment.get('goal_id')
-    text = comment.get('text')
-    new_comment = Comment(user_id=2, goal_id=goal_id,
-                          contents=text)  # 임시로 2를 넣어둘게요 !
+    comment = comment.get('comment')
+
+    user_info = User.query.filter_by(id=user_id).first()
+    user_info = to_dict(
+        user_info, ['id', 'email', 'username', 'profile_pic', 'profile'])
+
+    new_comment = Comment(user_id=user_id, goal_id=goal_id,
+                          contents=comment)
     db.session.add(new_comment)
     db.session.commit()
 
     emit('comment', {'goal_id': goal_id, 'comment': comment,
-                     'name': 'jongwoo'}, room=goal_id)
+                     'user': user_info}, room=goal_id)
 
 
 @socketio.on('left', namespace='/goal')
