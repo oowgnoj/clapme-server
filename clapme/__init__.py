@@ -16,14 +16,13 @@ app = Flask(__name__)
 app.config.from_object('config')
 app.config['SECRET_KEY'] = 'secret!'
 
-
 api = Api(app)
 initialize_routes(api)
 initialize_socket(app)
 initialize_db(app)
 
-
 # socket io test
+
 
 class LoginForm(Form):
     """Accepts a nickname and a room."""
@@ -55,7 +54,3 @@ def chat():
     if name == '' or room == '':
         return redirect(url_for('index'))
     return render_template('chat.html', name=name, room=room)
-
-
-if __name__ == '__main__':
-    socketio.run(app, debug=True)

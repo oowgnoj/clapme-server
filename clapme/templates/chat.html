@@ -14,22 +14,26 @@
       var socket;
       $(document).ready(function () {
         socket = io.connect(
-          "http://" + document.domain + ":" + location.port + "/goal"
+          "http://" + document.domain + ":" + location.port + "/goal",
+          { transports: ["websocket"] }
           // 안타깝게도 웹소켓 프로토콜 사용시 400 error
-          // { transports: ["websocket"] }
         );
+
         socket.on("connect", function () {
           socket.emit("joined", { name: "jonwoo", goal_id: 11 });
         });
+
         socket.on("status", function (data) {
           $("#chat").val($("#chat").val() + "<" + data.msg + ">\n");
           $("#chat").scrollTop($("#chat")[0].scrollHeight);
         });
+
         socket.on("comment", function (data) {
-          console.log(data.comment);
           $("#chat").val($("#chat").val() + data.comment + "\n");
           $("#chat").scrollTop($("#chat")[0].scrollHeight);
         });
+
+        // enter -> 메세지 등록
         $("#text").keypress(function (e) {
           var code = e.keyCode || e.which;
           if (code == 13) {
@@ -39,6 +43,7 @@
           }
         });
       });
+
       function leave_room() {
         socket.emit("left", {}, function () {
           socket.disconnect();
