@@ -1,0 +1,67 @@
+<html lang="ko">
+  <head>
+    <title>Flask-SocketIO-Chat: {{ room }}</title>
+    <meta charset="utf-8" />
+    <script
+      type="text/javascript"
+      src="//code.jquery.com/jquery-1.4.2.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"
+    ></script>
+    <script type="text/javascript" charset="utf-8">
+      var socket;
+      $(document).ready(function () {
+        socket = io.connect(
+          "http://" + document.domain + ":" + location.port + "/goal",
+          { transports: ["websocket"] }
+          // 안타깝게도 웹소켓 프로토콜 사용시 400 error
+        );
+
+        socket.on("connect", function () {
+          socket.emit("joined", { name: "jonwoo", goal_id: 11 });
+        });
+
+        socket.on("status", function (data) {
+          $("#chat").val($("#chat").val() + "<" + data.msg + ">\n");
+          $("#chat").scrollTop($("#chat")[0].scrollHeight);
+        });
+
+        socket.on("comment", function (data) {
+          $("#chat").val($("#chat").val() + data.comment + "\n");
+          $("#chat").scrollTop($("#chat")[0].scrollHeight);
+        });
+
+        // enter -> 메세지 등록
+        $("#text").keypress(function (e) {
+          var code = e.keyCode || e.which;
+          if (code == 13) {
+            text = $("#text").val();
+            $("#text").val("");
+            socket.emit("comment", { comment: text, goal_id: 11, user_id: 2 });
+          }
+        });
+      });
+
+      function leave_room() {
+        socket.emit("left", {}, function () {
+          socket.disconnect();
+
+          // go back to the login page
+          window.location.href = "{{ url_for('index') }}";
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Flask-SocketIO-Chat: {{ room }}</h1>
+    <textarea id="chat" cols="80" rows="20"></textarea><br /><br />
+    <input
+      id="text"
+      size="80"
+      placeholder="Enter your message here"
+    /><br /><br />
+    <a href="#" onclick="leave_room();">Leave this room</a>
+  </body>
+</html>
