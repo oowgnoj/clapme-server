@@ -1,3 +1,4 @@
+import datetime
 from jose import jwt
 
 SECRET_KEY = 'coffee'
@@ -53,3 +54,27 @@ def str_to_bool(s):
         return False
     else:
         raise ValueError
+
+
+# [helper 함수] 시간 format validation
+def is_valid_time(time: str) -> bool:
+    is_valid = True
+    if len(time) != 4:
+        is_valid = False
+    if not time.isdigit():
+        is_valid = False
+    return is_valid
+
+
+# [helper 함수] date string format validation
+def is_valid_date_str(date_str: str) -> bool:
+    format = "%Y-%m-d"
+    is_valid = True
+    try:
+        datetime.datetime.strptime(date_str, format)
+    except ValueError:
+        is_valid = False
+    return is_valid
+
+
+

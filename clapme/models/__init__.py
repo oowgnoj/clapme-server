@@ -2,6 +2,9 @@ from __future__ import absolute_import
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
+from .enum import *
+
+
 db = SQLAlchemy()
 
 
@@ -10,7 +13,6 @@ def initialize_db(app):
 
 
 class User(db.Model):
-
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(80),
                       index=True,
@@ -53,7 +55,6 @@ class User(db.Model):
 
 
 class Routine(db.Model):
-
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer,
                         db.ForeignKey('user.id'),
@@ -104,6 +105,10 @@ class Routine(db.Model):
     time = db.Column(db.String(30),
                      unique=False,
                      nullable=True)
+    description = db.Column(db.Text,
+                            index=False,
+                            unique=False,
+                            nullable=True)
     category = db.Column(db.String(80),
                          index=True,
                          unique=False,
@@ -123,7 +128,6 @@ class Routine(db.Model):
 
 
 class Success(db.Model):
-
     id = db.Column(db.Integer, primary_key=True)
     routine_id = db.Column(db.Integer,
                            db.ForeignKey('routine.id'),
@@ -142,7 +146,6 @@ class Success(db.Model):
 
 
 class Idea(db.Model):
-
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80),
                       nullable=False)

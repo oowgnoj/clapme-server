@@ -3,7 +3,7 @@ from flask import jsonify, request, Flask, make_response
 from jose import jwt
 from functools import wraps
 
-from ..models import db, User, UserGoal, Goal, Success, Reaction, Comment
+from ..models import db, User
 from ..util.helper import to_dict, extract
 from ..util.validation import api_json_validator
 
@@ -25,12 +25,11 @@ class ApiLogin(Resource):
             'username': user_info.username,
             'email': user_info.email,
             'profile': user_info.profile,
-            'profile_pic': user_info.profile_pic
+            'pic_url': user_info.pic_url
         }
 
         encoded = jwt.encode(payload, key, algorithm='HS256')
-        result = {'access-token': encoded, 'username': user_info.username, 'email': user_info.email,
-                  'profile': user_info.profile, 'profile_pic': user_info.profile_pic}
+        result = {'accessToken': encoded, 'username': user_info.username}
         return result, 200
 
 
@@ -58,15 +57,12 @@ def authenticate(func):
     def wrapper(*args, **kwargs):
         # if not getattr(func, 'authenticated', True):
         # return func(*args, **kwargs)
-
         parser = reqparse.RequestParser()
         parser.add_argument('Authorization', location='headers')
         token = parser.parse_args()
 
         # custom account lookup function
-
-        if token['Authorization'] != None:
-            print('통과가 되었다는거니?')
+        if token['Authorization'] is not None:
             return func(*args, **kwargs)
 
         abort(401)
