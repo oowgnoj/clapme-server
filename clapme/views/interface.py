@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from clapme.models import Routine
 
 
 @dataclass
@@ -20,8 +19,8 @@ class RoutineDto:
 
 
 @dataclass
-class RoutineSuccessDto:
-    routineId: str
+class RoutineStatusDto:
+    id: str
     title: str
     alarm: bool
     time: str

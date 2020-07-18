@@ -101,7 +101,7 @@ class Routine(db.Model):
                       index=False,
                       unique=False,
                       nullable=False,
-                      default=True),
+                      default=True)
     time = db.Column(db.String(30),
                      unique=False,
                      nullable=True)
@@ -125,6 +125,39 @@ class Routine(db.Model):
                                 cascade="all,delete",
                                 backref='routine',
                                 lazy=True)
+
+    def convert_to_routine_dto(self):
+        import dataclasses
+        from clapme.views.interface import RoutineDto
+        dto = RoutineDto(
+                id=self.id,
+                title=self.title,
+                alarm=self.alarm,
+                time=self.time,
+                mon=self.mon,
+                tue=self.tue,
+                wed=self.wed,
+                thu=self.thu,
+                fri=self.fri,
+                sat=self.sat,
+                sun=self.sun,
+                color=self.color.hex_code,
+                description=self.description
+            )
+        return dataclasses.asdict(dto)
+
+    def convert_to_routine_status_dto(self):
+        import dataclasses
+        from clapme.views.interface import RoutineStatusDto
+        dto = RoutineStatusDto(
+            id=self.id,
+            title=self.title,
+            alarm=self.alarm,
+            time=self.time,
+            color=self.color.hex_code,
+            success=False
+        )
+        return dataclasses.asdict(dto)
 
 
 class Success(db.Model):
