@@ -2,8 +2,6 @@ from __future__ import absolute_import
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-from .enum import *
-
 
 db = SQLAlchemy()
 

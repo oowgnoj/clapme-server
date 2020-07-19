@@ -1,4 +1,19 @@
 from dataclasses import dataclass
+from enum import Enum
+
+
+class Days(Enum):
+    mon = 'mon'
+    tue = 'tue'
+    wed = 'wed'
+    thu = 'thu'
+    fri = 'fri'
+    sat = 'sat'
+    sun = 'sun'
+
+    @classmethod
+    def has_value(cls, value):
+        return value in cls._value2member_map_
 
 
 @dataclass
@@ -57,7 +72,8 @@ class ScheduleDto:
         return getattr(self, key)
 
 
-# request schemas
+# ----- request schemas
+
 routine_post_request = {
     'type': 'object',
     'properties': {
@@ -86,5 +102,19 @@ routine_post_request = {
         'sat',
         'sun',
         'color'
+    ]
+}
+
+routine_success_post_request = {
+    'type': 'object',
+    'properties': {
+        'id': {'type': 'integer'},
+        'dateStr': {'type': 'string'},
+        'day': {'type': 'string'}
+    },
+    'required': [
+        'id',
+        'dateStr',
+        'day'
     ]
 }

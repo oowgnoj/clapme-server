@@ -2,6 +2,9 @@ import datetime
 from jose import jwt
 from jsonschema import ValidationError
 
+from clapme.views.interface import Days
+
+
 SECRET_KEY = 'coffee'
 
 
@@ -40,7 +43,7 @@ def to_dict_nested(query, attrs, nested_attrs):
     for attr in attrs:
         value = getattr(query, attr)
 
-        if(type(value) is list):
+        if type(value) is list:
             result[attr] = to_dict(value, nested_attrs)
         else:
             result[attr] = getattr(query, attr)
@@ -74,4 +77,6 @@ def validate_date_str(date_str: str):
         raise ValidationError('dateStr format error')
 
 
-
+def validate_day(day: str):
+    if not Days.has_value(day):
+        raise ValidationError('day format error')

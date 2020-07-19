@@ -11,9 +11,9 @@ from flask_restful import reqparse, abort, Api, Resource
 from flask import request
 from jsonschema import validate, ValidationError
 
-from .interface import RoutineDto, routine_post_request
+from .interface import routine_post_request, routine_success_post_request
 from ..models import db, User, Routine, Success, Color
-from ..util.helper import decode_info, to_dict, extract, str_to_bool, validate_time, validate_date_str
+from ..util.helper import decode_info, to_dict, extract, str_to_bool, validate_time, validate_date_str, validate_day
 from .auth import authenticate
 
 
@@ -45,7 +45,9 @@ class ApiRoutine(Resource):
         if 'description' in json_data:
             description = json_data['description']
 
-        color = Color.query.filter_by(hex_code=json_data['color']).first()
+        color = Color.query\
+            .filter_by(hex_code=json_data['color'])\
+            .first()
 
         new_routine = Routine(
             user_id=user_id,
@@ -78,19 +80,30 @@ class ApiRoutines(Resource):
         user_id = decode_info(token, ['id'])['id']
 
         args = request.args
-        if 'day' in args and 'dateStr' in args:
+        is_daily_list_request = 'day' in args and 'dateStr' in args
+
+        if is_daily_list_request:
             day = args['day']
             date_str = args['dateStr']
 
             try:
+                validate_day(day)
                 validate_date_str(date_str)
             except ValidationError:
                 abort(400)
 
-            routines = ApiRoutines.get_daily_routines_with_status(user_id, day, date_str)
-            return {'day': day, 'dateStr': date_str, 'routines': routines}, 200
+            routines = ApiRoutines.get_daily_routines_with_status(
+                user_id,
+                day,
+                date_str
+            )
+            return {'day': day,
+                    'dateStr': date_str,
+                    'routines': routines}, 200
         else:
-            return ApiRoutines.get_all_routines(user_id), 200
+            return ApiRoutines.get_all_routines(
+                user_id
+            ), 200
 
     # 루틴 전체 목록 조회
     @staticmethod
@@ -137,3 +150,43 @@ class ApiRoutines(Resource):
             result.append(routine)
 
         return result
+
+
+class ApiRoutineSuccess(Resource):
+    method_decorators = [authenticate]
+
+    def post(self):
+        token = request.headers.get('Authorization')
+        user_id = decode_info(token, ['id'])['id']
+
+        json_data = request.get_json(force=True)
+
+        try:
+            validate(instance=json_data, schema=routine_success_post_request)
+            validate_day(json_data['day'])
+            validate_date_str(json_data['dateStr'])
+        except ValidationError:
+            abort(400)
+
+        new_success = Success(
+            routine_id=json_data['id'],
+            day=json_data['day'],
+            date_str=json_data['dateStr']
+        )
+
+        db.session.add(new_success)
+        db.session.commit()
+
+        return ApiRoutines.get_daily_routines_with_status(
+            user_id,
+            json_data['day'],
+            json_data['dateStr']
+        ), 200
+
+
+
+
+
+
+
+
