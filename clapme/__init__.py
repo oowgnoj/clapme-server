@@ -1,5 +1,5 @@
-from flask import Flask, g
-from flask_restful import Resource, Api
+from flask import Flask
+from flask_restful import Api
 
 from .models import initialize_db
 from .views import initialize_routes

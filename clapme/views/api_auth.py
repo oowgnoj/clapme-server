@@ -1,24 +1,34 @@
-from flask_restful import reqparse, abort, Api, Resource
-from flask import jsonify, request, Flask, make_response
+import config
+from flask_restful import reqparse, abort, Resource
+from flask import request
 from jose import jwt
 from functools import wraps
+from jsonschema import validate, ValidationError
 
+from .validation import login_request, signup_request
 from ..models import db, User
-from ..util.helper import to_dict, extract
-from ..util.validation import api_json_validator
+from ..util import extract
 
 
-key = 'coffee'
+secret = config.JWT_SECRET_KEY
 
 
 class ApiLogin(Resource):
     def post(self):
         json_data = request.get_json(force=True)
 
+        try:
+            validate(instance=json_data, schema=login_request)
+        except ValidationError:
+            abort(400)
+
         email = json_data['email']
         password = json_data['password']
 
         user_info = User.query.filter_by(email=email).first()
+
+        if password != user_info.password:
+            abort(401)
 
         payload = {
             'id': user_info.id,
@@ -28,7 +38,7 @@ class ApiLogin(Resource):
             'pic_url': user_info.pic_url
         }
 
-        encoded = jwt.encode(payload, key, algorithm='HS256')
+        encoded = jwt.encode(payload, secret, algorithm='HS256')
         result = {'accessToken': encoded, 'username': user_info.username}
         return result, 200
 
@@ -38,14 +48,22 @@ class ApiSignup(Resource):
         json_data = request.get_json(force=True)
 
         try:
-            api_json_validator(json_data, ['email', 'password', 'username'])
-        except Exception as error:
-            abort(400, message="{}".format(error))
+            validate(instance=json_data, schema=signup_request)
+        except ValidationError:
+            abort(400)
 
-        signup_info = extract(
-            json_data, ['email', 'password', 'username'])
+        email = json_data['email']
+        password = json_data['password']
+        username = email.split("@")[0] # username 이 없을 경우 (oauth 등) email 의 아이디를 username 으로 설정
 
-        new_user = User(**signup_info)
+        if username in json_data:
+            username = json_data['username']
+
+        new_user = User(
+            email=email,
+            password=password,
+            username=username
+        )
         db.session.add(new_user)
         db.session.commit()
 
@@ -66,4 +84,13 @@ def authenticate(func):
             return func(*args, **kwargs)
 
         abort(401)
+
     return wrapper
+
+
+def decode_info(token, attrs):
+    result = {}
+    decoded = jwt.decode(token, secret, algorithms='HS256')
+    for attr in attrs:
+        result[attr] = decoded[attr]
+    return result

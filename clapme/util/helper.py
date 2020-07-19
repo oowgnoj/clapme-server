@@ -1,25 +1,5 @@
-import datetime
-from jose import jwt
-from jsonschema import ValidationError
-
-from clapme.views.interface import Days
-
-
-SECRET_KEY = 'coffee'
-
-
-# [helper 함수] 토큰 payload 에서 특정 키 attrs(type: list) 들의 값을 가져와 dict로 반환
-def decode_info(token, attrs):
-    result = {}
-    decoded = jwt.decode(token, SECRET_KEY, algorithms='HS256')
-    for attr in attrs:
-        result[attr] = decoded[attr]
-    return result
-
-
 # [helper 함수] DB 에서 불러온 리턴값인 query object 중 일부 필드만 객체로 추출
 def to_dict(query, attrs):
-    print(query, attrs)
     result = {}
     for attr in attrs:
         result[attr] = getattr(query, attr)
@@ -34,7 +14,6 @@ def extract(json, attrs):
     for key in keys:
         if key in attrs:
             result[key] = json[key]
-    print('result', result)
     return result
 
 
@@ -59,24 +38,3 @@ def str_to_bool(s):
     else:
         raise ValueError
 
-
-# [helper 함수] 시간 format validation
-def validate_time(time: str):
-    if len(time) != 4:
-        raise ValidationError('time format error')
-    if not time.isdigit():
-        raise ValidationError('time format error')
-
-
-# [helper 함수] date string format validation
-def validate_date_str(date_str: str):
-    format = "%Y-%m-%d"
-    try:
-        datetime.datetime.strptime(date_str, format)
-    except ValueError:
-        raise ValidationError('dateStr format error')
-
-
-def validate_day(day: str):
-    if not Days.has_value(day):
-        raise ValidationError('day format error')

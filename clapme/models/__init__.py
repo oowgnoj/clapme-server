@@ -205,6 +205,37 @@ class Idea(db.Model):
     routine_9 = db.Column(db.Text,
                           nullable=True)
 
+    def convert_to_routine_sample_dto(self):
+        import dataclasses
+        from clapme.views.interface import IdeaDto
+
+        samples = [self.routine_1,
+                   self.routine_2,
+                   self.routine_3,
+                   self.routine_4,
+                   self.routine_5,
+                   self.routine_6,
+                   self.routine_7,
+                   self.routine_8,
+                   self.routine_9]
+
+        routines = []
+        for sample in samples:
+            if sample is not None:
+                time = sample[1:5]
+                title = sample[7:len(sample)]
+                routines.append({'time': time, 'title': title})
+
+        dto = IdeaDto(
+            title=self.title,
+            subTitle=self.sub_title,
+            contents=self.contents,
+            picUrl=self.pic_url,
+            routines=routines
+        )
+        return dataclasses.asdict(dto)
+
+
 
 class Color(db.Model):
     id = db.Column(db.Integer, primary_key=True)

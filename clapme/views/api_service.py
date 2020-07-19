@@ -1,21 +1,14 @@
-
-# api.add_resource(ApiRoutine, '/routine')
-#     api.add_resource(ApiRoutines, '/routines')
-#     api.add_resource(ApiRoutineSuccess, '/routine-success')
-#     api.add_resource(ApiRoutineMaterials, '/routine-materials')
-#     api.add_resource(ApiIdea, '/idea')
-import dataclasses
-import json
-
-from flask_restful import reqparse, abort, Api, Resource
+import random
+from flask_restful import reqparse, abort, Resource
 from flask import request
 from jsonschema import validate, ValidationError
 
-from .interface import routine_post_request, routine_success_post_request
-from ..models import db, User, Routine, Success, Color
-from ..util.helper import decode_info, to_dict, extract, str_to_bool, validate_time, validate_date_str, validate_day
-from .auth import authenticate
+from ..models import db, Routine, Success, Color, Idea
+from ..util.constant import color_sets
 
+from .api_auth import authenticate, decode_info
+from .validation import validate_time, validate_day, validate_date_str, \
+    routine_post_request, routine_success_post_request
 
 parser = reqparse.RequestParser()
 
@@ -138,7 +131,7 @@ class ApiRoutines(Resource):
             .filter_by(**success_filter_option)\
             .all()
 
-        success_routine_id_list = map(lambda r: r.id, success_routine_list)
+        success_routine_id_list = list(map(lambda r: r.id, success_routine_list))
 
         result = []
         for routine in routine_list:
@@ -168,13 +161,16 @@ class ApiRoutineSuccess(Resource):
         except ValidationError:
             abort(400)
 
-        new_success = Success(
-            routine_id=json_data['id'],
-            day=json_data['day'],
-            date_str=json_data['dateStr']
-        )
+        new_success = {
+            'routine_id': json_data['id'],
+            'day': json_data['day'],
+            'date_str': json_data['dateStr']
+        }
 
-        db.session.add(new_success)
+        if Success.query.filter_by(**new_success).first() is not None:
+            abort(409)
+
+        db.session.add(Success(**new_success))
         db.session.commit()
 
         return ApiRoutines.get_daily_routines_with_status(
@@ -182,6 +178,47 @@ class ApiRoutineSuccess(Resource):
             json_data['day'],
             json_data['dateStr']
         ), 200
+
+
+class ApiRoutineMaterials(Resource):
+    method_decorators = [authenticate]
+
+    def get(self):
+        main_colors = Color.query.order_by(Color.id).all()
+
+        colors = []
+        for main in main_colors:
+            main_hex_code = main.hex_code
+
+            colors.append({
+                'main': main_hex_code,
+                'sub': color_sets[main_hex_code]
+            })
+
+        return {'colors': colors}, 200
+
+
+class ApiIdea(Resource):
+    method_decorators = [authenticate]
+
+    def get(self):
+        request_type = request.args['type']
+        idea_list = Idea.query.order_by(Idea.id).all()
+
+        if request_type == 'random':
+            random_index = random.randint(0, len(idea_list)-1)
+            random_idea = idea_list[random_index]
+            return random_idea.convert_to_routine_sample_dto(), 200
+
+        elif request_type == 'list':
+            return list(map(lambda idea: idea.convert_to_routine_sample_dto(), idea_list)), 200
+
+        else:
+            abort(400)
+
+
+
+
 
 
 

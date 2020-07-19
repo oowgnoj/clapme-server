@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import List
 
 
 class Days(Enum):
@@ -56,6 +57,15 @@ class RoutineSampleDto:
 
 
 @dataclass
+class IdeaDto:
+    title: str
+    subTitle: str
+    contents: str
+    picUrl: str
+    routines: List[RoutineSampleDto]
+
+
+@dataclass
 class ScheduleDto:
     mon: bool = False
     tue: bool = False
@@ -72,49 +82,3 @@ class ScheduleDto:
         return getattr(self, key)
 
 
-# ----- request schemas
-
-routine_post_request = {
-    'type': 'object',
-    'properties': {
-        'title': {'type': 'string'},
-        'alarm': {'type': 'boolean'},
-        'time': {'type': 'string'},
-        'mon': {'type': 'boolean'},
-        'tue': {'type': 'boolean'},
-        'wed': {'type': 'boolean'},
-        'thu': {'type': 'boolean'},
-        'fri': {'type': 'boolean'},
-        'sat': {'type': 'boolean'},
-        'sun': {'type': 'boolean'},
-        'color': {'type': 'string'},
-        'description': {'type': 'string'},
-    },
-    'required': [
-        'title',
-        'alarm',
-        'time',
-        'mon',
-        'tue',
-        'wed',
-        'thu',
-        'fri',
-        'sat',
-        'sun',
-        'color'
-    ]
-}
-
-routine_success_post_request = {
-    'type': 'object',
-    'properties': {
-        'id': {'type': 'integer'},
-        'dateStr': {'type': 'string'},
-        'day': {'type': 'string'}
-    },
-    'required': [
-        'id',
-        'dateStr',
-        'day'
-    ]
-}
